@@ -1,0 +1,30 @@
+
+name: 'etl_with_dbt_dwh'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'etl-with-dbt-dwh'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["data"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+
+models:
+  etl_with_dbt_dwh:
+    bronze:
+      # +schema: bronze
+      +materialized: table
+      # +enabled: false
+    silver:
+      +schema: silver
+      +materialized: table
+    gold:
+      +schema: gold
+      +materialized: view

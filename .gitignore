@@ -1,0 +1,12 @@
+
+target/
+dbt_packages/
+logs/
+
+scripts/install_conda.sh
+Dockerfile
+
+*psql_vol*
+
+**/*.duckdb
+**/*.duckdb.wal
