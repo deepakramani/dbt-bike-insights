@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: Customer dimension table
+    depends_on:
+      - source('gold_source', 'crm_cust_info')
+      - source('gold_source', 'erp_cust_az12')
+      - source('gold_source', 'erp_loc_a101')
+    columns: 
+      - name: customer_skey
+        tests:
+          - not_null
+          - unique
+      - name: customer_gender
+        tests:
+          - accepted_values:
+              values: ['Male','Female','n/a']
+
+  
+  - name: dim_products
+    description: Product dimension table
+    depends_on:
+      - source('gold_source', 'crm_prd_info')
+      - source('gold_source', 'erp_px_cat_g1v2')
+    columns:
+      - name: product_skey
+        tests:
+          - unique
+          - not_null
+  
+  - name: fact_sales
+    description: Sales fact table
+    depends_on:
+      - ref('dim_customers')
+      - ref('dim_products')
+      - source('gold_source', 'crm_sales_details')
