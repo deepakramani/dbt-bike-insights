@@ -2,100 +2,224 @@ version: 2
 
 models:
   - name: crm_cust_info
+    description: "Customer information including personal details and status."
     columns:
       - name: cst_id
+        description: "Unique identifier for the customer."
         tests:
           - not_null
           - unique
+      - name: cst_key
+        description: "Unique key associated with the customer."
       - name: cst_firstname
+        description: "First name of the customer."
         tests:
-          - custom_trimmed_check
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in customer's first name."
       - name: cst_lastname
+        description: "Last name of the customer."
         tests:
-          - custom_trimmed_check
-      - name: cst_gndr
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in customer's last name."
+      - name: cst_marital_status
+        description: "Customer's marital status (Married, Single, n/a)."
         tests:
           - accepted_values:
-              values: ['Male', 'Female', 'n/a'] 
+              values: ["Married", "Single", "n/a"]
+      - name: cst_gndr
+        description: "Gender of the customer."
+        tests:
+          - accepted_values:
+              values: ["Male", "Female", "n/a"]
+      - name: cst_create_date
+        description: "Date when the customer record was created."
+        tests:
+          - not_null
+          - custom_date_range_check:
+              min_date: "1900-01-01"
+              max_date: "2050-01-01"
+              expected_count: 0
+      - name: dwh_create_date
+        description: "DWH entry date of the customer."
   - name: crm_prd_info
+    description: "Contains product information."
     columns:
       - name: prd_id
+        description: "Unique identifier for each product."
         tests:
           - not_null
           - unique
+      - name: cat_id
+        description: "Category id of the product"
+        tests:
+          - not_null
+      - name: prd_key
+        description: "Identifier key of product "
+        tests:
+          - not_null
       - name: prd_nm
-        tests: 
-          - custom_trimmed_check
+        description: "Product name."
+        tests:
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in product names."
       - name: prd_cost
+        description: "Cost of the product."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: " >= 0"
       - name: prd_line
+        description: " Category of the product."
         tests:
-          - accepted_values: 
-              values: ["Mountains","Road","Sales","Touring", "n/a"]
+          - accepted_values:
+              values: ["Mountains", "Road", "Sales", "Touring", "n/a"]
+      - name: prd_start_date
+        description: "Start date of the product availability."
+        # tests:
+        #   - not_null
+        #   - custom_date_range_check:
+        #       min_date: "1900-01-01"
+        #       max_date: "2050-01-01"
+        #       expected_count: 0
+      - name: prd_end_dt
+        description: "End date of the product availability."
+        # tests:
+        #   - custom_date_range_check:
+        #       min_date: "1900-01-01"
+        #       max_date: "2050-01-01"
+        #       expected_count: 0
+      - name: dwh_create_date
+        description: "DWH entry date of the product."
+        # tests:
+        #   - not_null
+        #   - custom_date_range_check:
+        #       min_date: "1900-01-01"
+        #       max_date: "2050-01-01"
+        #       expected_count: 0
   - name: crm_sales_details
-    tests: 
+    description: "Contains all the sales transaction details"
+    tests:
       - dbt_utils.expression_is_true:
           expression: "sls_order_dt <= sls_ship_dt and sls_order_dt <= sls_due_dt"
           where: "sls_order_dt is not null and sls_ship_dt is not null and sls_due_dt is not null"
+          description: "Ensures order date occurs before or on the same day as shipping and due dates."
       - dbt_utils.expression_is_true:
           expression: "abs(sls_sales - (sls_quantity * sls_price)) < 0.01" # tolerance for floating point
+          description: "Ensures sales amount is correctly calculated based on quantity and price."
     columns:
+      - name: sls_ord_num
+        description: "Order number of the sales"
+      - name: sls_prd_key
+        description: "ID of the Product that was sold"
+      - name: sls_cust_id
+        description: "ID of the customer who made the order"
       - name: sls_order_dt
+        description: "Date when the order was placed."
         tests:
           - custom_date_range_check:
-              min_date: '1900-01-01'
-              max_date: '2050-01-01'
+              min_date: "1900-01-01"
+              max_date: "2050-01-01"
               expected_count: 19
+      - name: sls_ship_dt
+        description: "Date when the order was shipped."
+      - name: sls_due_dt
+        description: "Date when the order was due."
+
       - name: sls_sales
+        description: "Sales amount."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
+              description: "Ensures sales amount is non-negative."
       - name: sls_quantity
+        description: "Quantity of items sold."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: " >= 0"
-      - name: sls_price
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              expression: " >= 0"
+              description: "Ensures quantity is non-negative."
 
+      - name: sls_price
+        description: "Unit price of the item."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: " >= 0"
+              description: "Ensures sls_price is non-negative."
+      - name: dwh_create_date
+        description: "DWH entry date of the sales transaction."
   - name: erp_cust_az12
+    description: "Contains extra customer information."
     columns:
+      - name: cid
+        description: "Contains id of the customer"
       - name: bdate
+        description: "Birthdate of the customer."
         # tests:
         #   - custom_date_range_check:
         #       min_date: "1925-01-01"
         #       max_date: {{modules.datetime.date.today().strftime('%Y-%m-%d')}}
         #       expected_count: 17
       - name: gen
+        description: "Gender of the customer."
         tests:
           - accepted_values:
-              values: ['Male','Female','n/a']
+              values: ["Male", "Female", "n/a"]
+              description: "Ensures gender falls within the allowed values."
+      - name: dwh_create_date
+        description: "DWH entry date of the erp customer data."
 
   - name: erp_loc_a101
     columns:
+      - name: cid
+        description: "id of the customer"
       - name: cntry
+        description: "Country location of the customer."
         tests:
-          - custom_trimmed_check
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in country names."
           - accepted_values:
-              values: ['Australia','Canada','France','Germany', 'United Kingdom', 'United States', 'n/a']
+              values:
+                [
+                  "Australia",
+                  "Canada",
+                  "France",
+                  "Germany",
+                  "United Kingdom",
+                  "United States",
+                  "n/a",
+                ]
+              description: "Ensures country location falls within the allowed values."
+      - name: dwh_create_date
+        description: "DWH entry date of the erp customer location."
 
   - name: erp_px_cat_g1v2
     columns:
+      - name: id
+        description: "id of the product"
+        tests:
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in category names."
+
+          - not_null
       - name: cat
+        description: "Product category."
         tests:
-          - custom_trimmed_check
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in category names."
       - name: subcat
+        description: "Product subcategory."
         tests:
-          - custom_trimmed_check
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in subcategory names."
       - name: maintenance_status
+        description: "Whether maintenance status is present or not."
         tests:
-          - custom_trimmed_check
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in maintenance_status values."
           - accepted_values:
-              values: ['Yes', 'No']
+              values: ["Yes", "No"]
+              description: "Ensures maintenance status is either 'Yes' or 'No'."
+      - name: dwh_create_date
+        description: "DWH entry date of the product categories."

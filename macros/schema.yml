@@ -1,0 +1,51 @@
+version: 2
+
+macros:
+  - name: test_custom_date_range_check
+    description: "
+      Validates that a column's date values fall within a specified range.
+      If any values are outside this range, the test fails."
+    arguments:
+      - name: model
+        description: "The model (table) being tested."
+      - name: column_name
+        description: "The column containing date values."
+      - name: min_date
+        description: "The minimum allowed date value."
+      - name: max_date
+        description: "The maximum allowed date value."
+      - name: expected_count
+        description: "The expected number of violations before failing the test."
+
+  - name: test_custom_trimmed_check
+    description: "
+      Checks if a column contains values with leading or trailing spaces."
+    arguments:
+      - name: model
+        description: "The model (table) being tested."
+      - name: column_name
+        description: "The column to check for whitespace issues."
+
+  - name: generate_schema_name
+    description: "
+      Dynamically generates the schema name based on the target environment.
+      If a custom schema name is provided, it trims spaces and returns it."
+    arguments:
+      - name: custom_schema_name
+        description: "Optional custom schema name."
+      - name: node
+        description: "The dbt model node being processed."
+
+  - name: test_relationships_active_products
+    description: "
+      Ensures that product categories in `dim_products` reference only active categories
+      from `erp_px_cat_g1v2` where `prd_end_dt IS NULL`."
+    arguments:
+      - name: model
+        description: "The model (table) being tested."
+      - name: column_name
+        description: "The column containing category IDs."
+      - name: ref_model
+        description: "The reference model containing valid categories."
+      - name: ref_column
+        description: "The column in the reference model containing category IDs."
