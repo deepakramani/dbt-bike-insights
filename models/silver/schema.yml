@@ -1,0 +1,101 @@
+version: 2
+
+models:
+  - name: crm_cust_info
+    columns:
+      - name: cst_id
+        tests:
+          - not_null
+          - unique
+      - name: cst_firstname
+        tests:
+          - custom_trimmed_check
+      - name: cst_lastname
+        tests:
+          - custom_trimmed_check
+      - name: cst_gndr
+        tests:
+          - accepted_values:
+              values: ['Male', 'Female', 'n/a'] 
+  - name: crm_prd_info
+    columns:
+      - name: prd_id
+        tests:
+          - not_null
+          - unique
+      - name: prd_nm
+        tests: 
+          - custom_trimmed_check
+      - name: prd_cost
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: " >= 0"
+      - name: prd_line
+        tests:
+          - accepted_values: 
+              values: ["Mountains","Road","Sales","Touring", "n/a"]
+  - name: crm_sales_details
+    tests: 
+      - dbt_utils.expression_is_true:
+          expression: "sls_order_dt <= sls_ship_dt and sls_order_dt <= sls_due_dt"
+          where: "sls_order_dt is not null and sls_ship_dt is not null and sls_due_dt is not null"
+      - dbt_utils.expression_is_true:
+          expression: "abs(sls_sales - (sls_quantity * sls_price)) < 0.01" # tolerance for floating point
+    columns:
+      - name: sls_order_dt
+        tests:
+          - custom_date_range_check:
+              min_date: '1900-01-01'
+              max_date: '2050-01-01'
+              expected_count: 19
+      - name: sls_sales
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: sls_quantity
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: " >= 0"
+      - name: sls_price
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: " >= 0"
+
+  - name: erp_cust_az12
+    columns:
+      - name: bdate
+        # tests:
+        #   - custom_date_range_check:
+        #       min_date: "1925-01-01"
+        #       max_date: {{modules.datetime.date.today().strftime('%Y-%m-%d')}}
+        #       expected_count: 17
+      - name: gen
+        tests:
+          - accepted_values:
+              values: ['Male','Female','n/a']
+
+  - name: erp_loc_a101
+    columns:
+      - name: cntry
+        tests:
+          - custom_trimmed_check
+          - accepted_values:
+              values: ['Australia','Canada','France','Germany', 'United Kingdom', 'United States', 'n/a']
+
+  - name: erp_px_cat_g1v2
+    columns:
+      - name: cat
+        tests:
+          - custom_trimmed_check
+      - name: subcat
+        tests:
+          - custom_trimmed_check
+      - name: maintenance_status
+        tests:
+          - custom_trimmed_check
+          - accepted_values:
+              values: ['Yes', 'No']
