@@ -2,11 +2,11 @@ WITH customer_basic_data AS (
     SELECT *
     FROM {{ source('gold_source','crm_cust_info') }}
 ),
-customer_extra_data AS (
+customer_erp_data AS (
     SELECT *
     FROM {{ source('gold_source','erp_cust_az12') }} 
 ), 
-customer_location_data AS (
+customer_erp_location AS (
     SELECT *
     FROM {{ source('gold_source','erp_loc_a101') }} 
 ),
@@ -23,10 +23,10 @@ aggregated_customer_data AS (
         END AS customer_gender,
         ci.cst_marital_status AS customer_marital_status,
         la.cntry AS customer_country,
-        ci.cst_create_date AS create_date
+        ci.cst_create_date AS customer_create_date
     FROM customer_basic_data AS ci
-    LEFT JOIN customer_extra_data ca ON ci.cst_key = ca.cid
-    LEFT JOIN customer_location_data la ON ci.cst_key = la.cid
+    LEFT JOIN customer_erp_data ca ON ci.cst_key= ca.cid
+    LEFT JOIN customer_erp_location la ON ci.cst_key = la.cid
 )
 SELECT
     ROW_NUMBER() OVER (ORDER BY customer_id) AS customer_skey,
