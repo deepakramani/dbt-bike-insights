@@ -7,8 +7,14 @@ help:
 	@echo
 	@echo "Recommended order to run commands:"
 	@echo "  1. make install_docker         # Install Docker and prerequisites"
-	@echo "  2. make up                     # Start the ETL DWH environment"
-	@echo
+	@echo "  2. make pg                        # Connect to PostgreSQL using pgcli"
+	@echo "  3. make up                        # Start the ETL DWH environment"
+	@echo "  4. make down                      # Stop and remove the ETL DWH environment"
+	@echo "  5. make dbt_setup                 # Setup dbt environment"
+	@echo "  6. make run_silver                # Run dbt models for the silver layer"
+	@echo "  7. make run_gold                  # Run dbt models for the gold layer"
+	@echo "  8. make test_silver               # Test dbt models for the silver layer"
+	@echo "  9. make test_gold                 # Test dbt models for the gold layer"
 	@echo "Run 'make <target>' to execute a specific step."
 
 
@@ -35,10 +41,10 @@ run_gold:
 
 test_silver:
 	dbt compile
-	@sleep 3
+	@sleep 1
 	dbt test --select silver
 
 test_gold:
 	dbt compile
-	@sleep 3
+	@sleep 1
 	dbt test --select gold
