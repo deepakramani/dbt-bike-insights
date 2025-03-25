@@ -2,11 +2,12 @@
 target/
 dbt_packages/
 logs/
+*user.yml
 
 scripts/install_conda.sh
 Dockerfile
-
 *psql_vol*
 
-**/*.duckdb
-**/*.duckdb.wal
+*duckdb*
+*.wal
+.vscode
