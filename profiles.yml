@@ -1,5 +1,4 @@
-
-etl-with-dbt-dwh:
+etl-with-dbt-dwh_postgres:
   outputs:
     dev:
       dbname: "{{ env_var('POSTGRES_DB') }}" # uses jinja template so needs env_var
@@ -11,3 +10,11 @@ etl-with-dbt-dwh:
       threads: 2
       type: postgres
   target: dev
+
+etl-dbt-duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "/Users/dross/Desktop/educ/etl_with_dbt_dwh/dwh.duckdb"
+      threads: 2

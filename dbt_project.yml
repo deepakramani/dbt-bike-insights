@@ -1,10 +1,10 @@
-
-name: 'etl_with_dbt_dwh'
-version: '1.0.0'
+name: "etl_with_dbt_dwh"
+version: "1.0.0"
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'etl-with-dbt-dwh'
+# profile: "etl-with-dbt-dwh_postgres"
+profile: "etl-with-dbt-dwh_postgres"
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -13,7 +13,7 @@ seed-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:         # directories to be removed by `dbt clean`
+clean-targets: # directories to be removed by `dbt clean`
   - "target"
 
 models:
