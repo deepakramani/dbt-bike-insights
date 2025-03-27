@@ -30,6 +30,7 @@ help:
 	@echo " 17. make test_silver            # Test Silver layer"
 	@echo " 18. make test_gold              # Test Gold layer"
 	@echo " 19. make compile_analyses       # Compile Analyses queries"
+	@echo " 20. Install dbt                 # Install dbt-core and others"
 	@echo "Run 'make <target>' to execute a specific step."
 
 install_docker:
@@ -43,6 +44,13 @@ up:
 
 down:
 	docker-compose -f docker/docker-compose.yml down -v
+
+install_dbt:
+	source ./scripts/install_conda.sh
+	@sleep 2
+	pip install --upgrade pip
+	pip install pipenv
+	pipenv install dbt-core dbt-postgres dbt-duckdb
 
 dbt_setup:
 	dbt clean
