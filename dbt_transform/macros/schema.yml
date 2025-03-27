@@ -3,7 +3,7 @@ version: 2
 macros:
   - name: test_custom_date_range_check
     description: "
-      Validates that a column's date values fall within a specified range.
+      Validates that a columns date values fall within a specified range.
       If any values are outside this range, the test fails."
     arguments:
       - name: model
@@ -38,8 +38,8 @@ macros:
 
   - name: test_relationships_active_products
     description: "
-      Ensures that product categories in `dim_products` reference only active categories
-      from `erp_px_cat_g1v2` where `prd_end_dt IS NULL`."
+      Ensures that product categories in dim_products reference only active categories
+      from erp_px_cat_g1v2 where prd_end_dt IS NULL."
     arguments:
       - name: model
         description: "The model (table) being tested."
@@ -49,3 +49,13 @@ macros:
         description: "The reference model containing valid categories."
       - name: ref_column
         description: "The column in the reference model containing category IDs."
+
+  - name: copy_all_from_postgres_gold
+    description: "
+      Copies tables from a PostgreSQL database to DuckDB using the postgres_scan() function."
+
+  - name: create_customer_bio_struct
+    description: "Creates a DuckDB structured type customer_bio_struct in the analytics schema if it doesn't already exist."
+
+  - name: create_product_struct
+    description: " Creates a DuckDB structured type product_struct in the analytics schema if it doesn't already exist."

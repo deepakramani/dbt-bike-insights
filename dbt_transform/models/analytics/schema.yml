@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: analytics_source
+    # database: "dwh" # Enclose in quotes
+    schema: gold # Enclose in quotes
+    tables:
+      - name: "dim_customers" # Enclose in quotes
+      - name: "dim_products" # Enclose in quotes
+      - name: "fact_sales" # Enclose in quotes
+
+models:
+  - name: report_customers
+    description: "Generates a comprehensive customers report."
+  - name: report_products
+    description: "Generates a comprehensive products report."
