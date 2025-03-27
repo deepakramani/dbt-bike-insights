@@ -1,10 +1,10 @@
-name: "etl_with_dbt_dwh"
+name: "dbt_transform"
 version: "1.0.0"
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
 # profile: "etl-with-dbt-dwh_postgres"
-profile: "etl-with-dbt-dwh_postgres"
+profile: "dbt_transform_postgres" #"dbt_duckdb"
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -17,14 +17,13 @@ clean-targets: # directories to be removed by `dbt clean`
   - "target"
 
 models:
-  etl_with_dbt_dwh:
-    bronze:
-      # +schema: bronze
-      +materialized: table
-      # +enabled: false
+  dbt_transform: # same name as project
     silver:
       +schema: silver
       +materialized: table
     gold:
       +schema: gold
+      +materialized: view
+    analytics:
+      +schema: analytics
       +materialized: view
