@@ -193,5 +193,4 @@ models:
               severity: warn
               where: "sales_due_date IS NOT NULL AND sales_order_date IS NOT NULL"
               description: "Ensures due date is on or after order date."
-  - name: copy_gold_tables
-    description: "Syncs gold-layer tables from PostgreSQL to DuckDB by invoking the 'copy_all_from_postgres_gold' macro."
+ 

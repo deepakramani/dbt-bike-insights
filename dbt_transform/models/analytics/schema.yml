@@ -2,7 +2,6 @@ version: 2
 
 sources:
   - name: analytics_source
-    # database: "dwh" # Enclose in quotes
     schema: gold # Enclose in quotes
     tables:
       - name: "dim_customers" # Enclose in quotes
@@ -10,6 +9,8 @@ sources:
       - name: "fact_sales" # Enclose in quotes
 
 models:
+  - name: copy_gold_tables
+    description: "Syncs gold-layer tables from PostgreSQL to DuckDB by invoking the 'copy_all_from_postgres_gold' macro."
   - name: report_customers
     description: "Generates a comprehensive customers report."
   - name: report_products
