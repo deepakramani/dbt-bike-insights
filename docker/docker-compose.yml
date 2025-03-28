@@ -12,6 +12,12 @@ services:
       - "./postgres_init_db:/docker-entrypoint-initdb.d"
       - "./input_data:/home/input_data:rw"
       - "../psql_vol:/var/lib/postgresql/data:rw"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
     networks:
       - my_network
 
