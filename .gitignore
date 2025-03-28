@@ -8,6 +8,5 @@ Dockerfile
 *psql_vol*
 
 dwh.duckdb
-dwh.duckdb.wal
 *.wal
 .vscode
