@@ -1,0 +1,25 @@
+{
+    "makefile.configureOnOpen": false,
+    "yaml.schemas": {
+        "https://schemas.getdbt.com/dbt-yaml/latest/dbt_yml_files-latest.json": [
+            "models/**/*.yml",
+            "snapshots/**/*.yml",
+            "macros/**/*.yml"
+        ],
+        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/latest/selectors-latest.json": [
+            "selectors.yml"
+        ],
+        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/latest/packages-latest.json": [
+            "packages.yml"
+        ]
+    },
+    "terminal.integrated.env.linux": {
+        "DBT_PROFILES_DIR": "${workspaceFolder}/dbt_transform"
+    },
+    "terminal.integrated.env.osx": {
+        "DBT_PROFILES_DIR": "${workspaceFolder}/dbt_transform"
+    },
+    "terminal.integrated.env.windows": {
+        "DBT_PROFILES_DIR": "${workspaceFolder}/dbt_transform"
+    }
+}
