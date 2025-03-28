@@ -11,30 +11,37 @@ help:
 	@echo "Usage: make [target]"
 	@echo
 	@echo "Recommended order to run commands:"
-	@echo "  1. make install_docker         # Install Docker and prerequisites"
-	@echo "  2. make pg                     # Connect to PostgreSQL using pgcli"
-	@echo "  3. make up                     # Start the ETL DWH environment"
-	@echo "  4. make down                   # Stop and remove the ETL DWH environment"
-	@echo "  5. make dbt_setup              # Setup dbt environment"
-	@echo "  6. make setup_bronze_tables    # Create Bronze tables"
-	@echo "  7. make populate_bronze_tables # Populate Bronze tables"
-	@echo "  8. make setup_silver_tables    # Create Silver tables"
-	@echo "  9. make populate_silver_tables # Populate Silver tables"
-	@echo " 10. make setup_gold_tables      # Create Gold tables"
-	@echo " 11. make populate_gold_tables   # Populate Gold tables"
-	@echo " 12. make run_silver             # Run dbt models for the silver layer"
-	@echo " 13. make run_gold               # Run dbt models for the gold layer"
-	@echo " 14. make run_analytics          # Run analytics models"
-	@echo " 15. make load_gold_tables       # Load gold tables to DuckDB"
-	@echo " 16. make test_bronze            # Test Bronze layer"
-	@echo " 17. make test_silver            # Test Silver layer"
-	@echo " 18. make test_gold              # Test Gold layer"
-	@echo " 19. make compile_analyses       # Compile Analyses queries"
-	@echo " 20. Install dbt                 # Install dbt-core and others"
-	@echo "Run 'make <target>' to execute a specific step."
+	@echo "  1. make install_docker          # Install Docker and prerequisites"
+	@echo "  2. Install dbt                  # Install dbt-core and others"
+	@echo "  3. make dbt_setup               # Setup dbt environment"
+	@echo "  4. make pg                       # Connect to PostgreSQL using pgcli"
+	@echo "  5. make up                       # Start the ETL DWH environment"
+	@echo "  6. make down                     # Stop and remove the ETL DWH environment"
+	@echo "  7. make setup_bronze_tables      # Create Bronze tables"
+	@echo "  8. make populate_bronze_tables   # Populate Bronze tables"
+	@echo "  9. make setup_silver_tables      # Create Silver tables"
+	@echo " 10. make populate_silver_tables  # Populate Silver tables"
+	@echo " 11. make setup_gold_tables        # Create Gold tables"
+	@echo " 12. make populate_gold_tables    # Populate Gold tables"
+	@echo " 13. make run_silver              # Run dbt models for the silver layer"
+	@echo " 14. make run_gold                # Run dbt models for the gold layer"
+	@echo " 15. make run_analytics           # Run analytics models"
+	@echo " 16. make load_gold_tables        # Load gold tables to DuckDB"
+	@echo " 17. make test_bronze             # Test Bronze layer"
+	@echo " 18. make test_silver             # Test Silver layer"
+	@echo " 19. make test_gold               # Test Gold layer"
+	@echo " 20. make compile_analyses         # Compile Analyses queries"
+	@echo "Run 'make <target>' to execute a specific step.""
 
 install_docker:
 	source ./scripts/install_docker.sh 
+
+install_dbt:
+	source ./scripts/install_conda.sh
+	@sleep 2
+	pip install --upgrade pip
+	pip install pipenv
+	pipenv install dbt-core dbt-postgres dbt-duckdb
 
 pg:
 	pgcli -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB}
@@ -45,12 +52,7 @@ up:
 down:
 	docker-compose -f docker/docker-compose.yml down -v
 
-install_dbt:
-	source ./scripts/install_conda.sh
-	@sleep 2
-	pip install --upgrade pip
-	pip install pipenv
-	pipenv install dbt-core dbt-postgres dbt-duckdb
+
 
 dbt_setup:
 	dbt clean
