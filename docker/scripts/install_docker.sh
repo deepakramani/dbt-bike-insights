@@ -8,4 +8,4 @@ chmod +x docker-compose
 echo 'export PATH="/home/'$USER'/soft:$PATH"' >> ~/.bashrc
 sudo groupadd docker
 sudo usermod -aG docker $USER
-cd ~/sql-data-warehouse-project
+cd ~/etl_with_dbt_dwh
