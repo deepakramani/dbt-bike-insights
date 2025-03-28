@@ -16,5 +16,5 @@ dbt_duckdb:
   outputs:
     dev:
       type: duckdb
-      path: "/Users/dross/Desktop/educ/etl_with_dbt_dwh/dwh.duckdb"
+      path: "{{ env_var('DUCKDB_PATH') }}"
       threads: 2
