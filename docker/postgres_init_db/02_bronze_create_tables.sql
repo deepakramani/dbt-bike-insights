@@ -12,7 +12,10 @@ CREATE TABLE IF NOT EXISTS bronze.crm_cust_info(
     cst_lastname VARCHAR(50),
     cst_marital_status VARCHAR(50),
     cst_gndr VARCHAR(50),
-    cst_create_date DATE
+    cst_create_date DATE,
+    email VARCHAR(100),
+    place_of_residence VARCHAR(50),
+    postal_code INT
 );
 
 DROP TABLE IF EXISTS bronze.crm_prd_info;

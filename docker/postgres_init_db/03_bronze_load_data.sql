@@ -5,7 +5,7 @@ Loads the raw data into those tables. It leverages the bulk insert feature -- "C
 \c sql_dwh_db;
 
 COPY bronze.crm_cust_info
-FROM '/home/input_data/source_crm/cust_info.csv'
+FROM '/home/input_data/source_crm/cust_info_new.csv'
 WITH (FORMAT CSV, HEADER TRUE, DELIMITER ',');
 
 COPY bronze.crm_prd_info

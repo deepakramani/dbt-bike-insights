@@ -43,16 +43,21 @@ models:
         tests:
           - accepted_values:
               values: ["Male", "Female", "n/a"]
-      - name: cst_create_date
-        description: "Date when the customer record was created."
+      - name: cst_email
+        description: "Email id of the customer."
         tests:
-          - not_null
-          - custom_date_range_check:
-              min_date: "1900-01-01"
-              max_date: "2050-01-01"
-              expected_count: 0
-      - name: dwh_create_date
-        description: "DWH entry date of the customer."
+          - unique
+          - email_check:
+            description: "tests email if it follows standard pattern."
+      - name: cst_place
+        description: "Place of residence of the customer."
+      - name: cst_postal_code
+        description: "Postal code of residence of the customer."
+      - name: cst_create_date
+        description: "created profile date of the customer."
+      - name: updated_at
+        description: "updated datetime of the entries. Needed to monitor for changes."
+
   - name: crm_prd_info
     description: "Contains product information."
     tests:

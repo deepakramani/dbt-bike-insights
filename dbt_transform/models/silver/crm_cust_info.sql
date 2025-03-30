@@ -1,13 +1,6 @@
-
 WITH source AS (
     SELECT 
-    cst_id,
-    cst_key,
-    cst_firstname,
-    cst_lastname,
-    cst_marital_status,
-    cst_gndr,
-    cst_create_date
+        *
     FROM {{ source('silver_source', 'crm_cust_info') }}
 ),
 latest_customer AS (
@@ -36,7 +29,7 @@ cleaned_customer AS (
             ELSE 'n/a'
         END AS cst_gndr,
         cst_create_date::DATE as cst_create_date,
-        now() AS dwh_create_date
+        cst_create_date + INTERVAL '1 day' as updated_at
     FROM
         latest_customer
     WHERE
