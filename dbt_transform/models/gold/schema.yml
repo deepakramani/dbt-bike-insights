@@ -34,7 +34,7 @@ models:
         tests:
           - not_null
           - relationships:
-              to: source('gold_source', 'erp_cust_az1')
+              to: source('gold_source', 'erp_cust_az12')
               field: cid
           - relationships:
               to: source('gold_source', 'erp_loc_a101')
@@ -193,4 +193,3 @@ models:
               severity: warn
               where: "sales_due_date IS NOT NULL AND sales_order_date IS NOT NULL"
               description: "Ensures due date is on or after order date."
- 
