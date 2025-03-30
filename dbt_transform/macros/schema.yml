@@ -59,3 +59,6 @@ macros:
 
   - name: create_product_struct
     description: " Creates a DuckDB structured type product_struct in the analytics schema if it doesn't already exist."
+
+  - name: test_updated_at_check
+    description: "Check to confirm whether updated_at column has datetime greater than start_date if end_date is 2999-12-31, else greater than end_date."

@@ -55,6 +55,11 @@ models:
         description: "DWH entry date of the customer."
   - name: crm_prd_info
     description: "Contains product information."
+    tests:
+      - updated_at_check:
+          updated_at_column: updated_at
+          start_date_column: prd_start_date
+          end_date_column: prd_end_date
     columns:
       - name: prd_id
         description: "Unique identifier for each product."
@@ -87,23 +92,27 @@ models:
               values: ["Mountains", "Road", "Sales", "Touring", "n/a"]
       - name: prd_start_date
         description: "Start date of the product availability."
-        # tests:
-        #   - not_null
+        tests:
+          - not_null
         #   - custom_date_range_check:
         #       min_date: "1900-01-01"
         #       max_date: "2050-01-01"
         #       expected_count: 0
-      - name: prd_end_dt
+      - name: prd_end_date
         description: "End date of the product availability."
-        # tests:
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= prd_start_date"
+              name: "prd_end_date_greater_than_prd_start_date"
         #   - custom_date_range_check:
         #       min_date: "1900-01-01"
         #       max_date: "2050-01-01"
         #       expected_count: 0
-      - name: dwh_create_date
-        description: "DWH entry date of the product."
-        # tests:
-        #   - not_null
+      - name: updated_at
+        description: "Updated datetime of the product."
+        tests:
+          - not_null
         #   - custom_date_range_check:
         #       min_date: "1900-01-01"
         #       max_date: "2050-01-01"
