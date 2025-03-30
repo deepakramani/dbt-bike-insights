@@ -1,25 +1,24 @@
 {
     "makefile.configureOnOpen": false,
     "yaml.schemas": {
-        "https://schemas.getdbt.com/dbt-yaml/latest/dbt_yml_files-latest.json": [
+        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/dbt_yml_files.json": [
             "models/**/*.yml",
             "snapshots/**/*.yml",
             "macros/**/*.yml"
         ],
-        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/latest/selectors-latest.json": [
+        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/dbt_project.json": [
+            "dbt_project.yml"
+        ],
+        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/selectors.json": [
             "selectors.yml"
         ],
-        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/latest/packages-latest.json": [
+        "https://raw.githubusercontent.com/dbt-labs/dbt-jsonschema/main/schemas/packages.json": [
             "packages.yml"
         ]
     },
-    "terminal.integrated.env.linux": {
-        "DBT_PROFILES_DIR": "${workspaceFolder}/dbt_transform"
+    "files.associations": {
+        "*.yml": "yaml",
+        "*.yaml": "yaml"
     },
-    "terminal.integrated.env.osx": {
-        "DBT_PROFILES_DIR": "${workspaceFolder}/dbt_transform"
-    },
-    "terminal.integrated.env.windows": {
-        "DBT_PROFILES_DIR": "${workspaceFolder}/dbt_transform"
-    }
+    "yaml.format.enable": true
 }
