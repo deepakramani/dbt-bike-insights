@@ -18,8 +18,15 @@
     - Creates/replaces DuckDB tables: `gold.fact_sales`, `gold.dim_customers`, `gold.dim_products`.
     - Materializes `gold.copy_gold_tables` with one row (`status = 1`).
 */
-{{ copy_all_from_postgres_gold([
-    {'pg_schema': 'gold', 'pg_table': 'fact_sales', 'duckdb_schema': 'gold', 'duckdb_table': 'fact_sales'},
-    {'pg_schema': 'gold', 'pg_table': 'dim_customers', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_customers'},
-    {'pg_schema': 'gold', 'pg_table': 'dim_products', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_products'}
-]) }}
+{% if target.type == 'duckdb' %} -- for dbt docs generate errors
+  {{ copy_all_from_postgres_gold([
+      {'pg_schema': 'gold', 'pg_table': 'fact_sales', 'duckdb_schema': 'gold', 'duckdb_table': 'fact_sales'},
+      {'pg_schema': 'gold', 'pg_table': 'dim_customers', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_customers'},
+      {'pg_schema': 'gold', 'pg_table': 'dim_products', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_products'}
+  ]) }}
+{% else %}
+  -- This query will be used for documentation generation but never executed
+  SELECT 
+      1 as placeholder_col
+  WHERE FALSE
+{% endif %}

@@ -6,7 +6,8 @@
         {%- set duckdb_table = table.duckdb_table -%}
         {% set sql %}
             CREATE SCHEMA IF NOT EXISTS gold;
-            CREATE OR REPLACE TABLE {{ duckdb_schema }}.{{ duckdb_table }} AS
+            DROP TABLE IF EXISTS {{ duckdb_schema }}.{{ duckdb_table }};
+            CREATE TABLE {{ duckdb_schema }}.{{ duckdb_table }} AS
             SELECT * 
             FROM postgres_scan(
                 'postgresql://{{ env_var('POSTGRES_USER') }}:{{ env_var('POSTGRES_PASSWORD') }}@{{ env_var('POSTGRES_HOST') }}:{{ env_var('POSTGRES_PORT') }}/{{ env_var('POSTGRES_DB') }}',
