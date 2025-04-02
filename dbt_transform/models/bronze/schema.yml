@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: bronze_source
+    database: "{{ env_var('POSTGRES_DB') }}"
+    schema: raw
+    tables:
+      - name: raw_crm_cust_info
+      - name: raw_crm_prd_info
+      - name: raw_crm_sales_details
+      - name: raw_erp_cust_az12
+      - name: raw_erp_loc_a101
+      - name: raw_erp_px_cat_g1v2
+
+models:
+  - name: bz_crm_cust_info
+  - name: bz_crm_prd_info
+  - name: bz_crm_sales_details
+  - name: bz_erp_cust_az12
+  - name: bz_erp_loc_a101
+  - name: bz_erp_px_cat_g1v2
