@@ -51,8 +51,7 @@ macros:
         description: "The column in the reference model containing category IDs."
 
   - name: copy_all_from_postgres_gold
-    description: "
-      Copies tables from a PostgreSQL database to DuckDB using the postgres_scan() function."
+    description: "Copies all tables from a specified PostgreSQL database schema to DuckDB using the `postgres_scan` function. Intended for migrating gold-layer data into an analytics environment."
 
   - name: create_customer_bio_struct
     description: "Creates a DuckDB structured type customer_bio_struct in the analytics schema if it doesn't already exist."
@@ -62,6 +61,8 @@ macros:
 
   - name: test_email_check
     description: "Checks if the email is of standard pattern."
-
-  - name: test_updated_at_check
-    description: "Check to confirm whether updated_at column has datetime greater than start_date if end_date is 2999-12-31, else greater than end_date."
+    arguments:
+      - name: model
+        description: "The model (table) being tested."
+      - name: column_name
+        description: "email column name to check"

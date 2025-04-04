@@ -4,9 +4,17 @@
 
 WITH source AS (
     SELECT 
-        *,--(has ingested_at for incremental filtering)
-        CURRENT_TIMESTAMP AS updated_at -- for snapshot tracking
+        prd_id,
+        prd_key,
+        prd_nm,
+        COALESCE(prd_cost, 0) AS prd_cost,  -- Schema evolution
+        prd_line,
+        prd_start_dt,
+        prd_end_dt,
+        ingested_at,
+        CURRENT_TIMESTAMP::TIMESTAMP AS updated_at -- for snapshot tracking
     FROM {{ source('bronze_source', 'raw_crm_prd_info') }}
+    WHERE prd_id IS NOT NULL
 )
 SELECT 
     *

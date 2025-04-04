@@ -1,21 +1,15 @@
+{{ config(
+    unique_key= 'cst_id'
+) }}
 WITH source AS (
     SELECT 
         *
-    FROM {{ source('silver_source', 'crm_cust_info') }}
+    FROM {{ ref('bz_crm_cust_info') }}
 ),
-latest_customer AS (
-    SELECT
-        *,
-        ROW_NUMBER() OVER ( PARTITION BY cst_id ORDER BY cst_create_date desc) as  flag_latest
-    FROM
-        source
-    WHERE
-        cst_id IS NOT NULL
-), 
 cleaned_customer AS (
     SELECT
         cst_id,
-        cst_key,
+        cst_key AS cst_code,
         TRIM(cst_firstname) AS cst_firstname,
         TRIM(cst_lastname) AS cst_lastname,
         CASE
@@ -29,13 +23,19 @@ cleaned_customer AS (
             ELSE 'n/a'
         END AS cst_gndr,
         cst_create_date::DATE as cst_create_date,
-        cst_create_date + INTERVAL '1 day' as updated_at
+        COALESCE(TRIM(cst_email), 'unknown') AS cst_email,
+        COALESCE(cst_place, 'unknown') AS cst_place,
+        COALESCE(TRIM(CAST(cst_postal_code AS VARCHAR)), 'unknown') AS cst_postal_code,
+        ingested_at,
+        updated_at
     FROM
-        latest_customer
-    WHERE
-        flag_latest = 1
+        source
 )
 SELECT
     *
 FROM
     cleaned_customer
+
+{% if is_incremental() %}
+WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }})
+{% endif %}

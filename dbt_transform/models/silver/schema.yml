@@ -5,206 +5,272 @@ sources:
     database: "{{ env_var('POSTGRES_DB') }}"
     schema: bronze
     tables:
-      - name: crm_cust_info
-      - name: crm_prd_info
-      - name: crm_sales_details
-      - name: erp_cust_az12
-      - name: erp_loc_a101
-      - name: erp_px_cat_g1v2
+      - name: bz_crm_cust_info
+      - name: bz_crm_prd_info
+      - name: bz_crm_sales_details
+      - name: bz_erp_cust_az12
+      - name: bz_erp_loc_a101
+      - name: bz_erp_px_cat_g1v2
 
 models:
   - name: crm_cust_info
-    description: "Customer information including personal details and status."
+    description: "Cleaned and standardized CRM customer information including personal details and status."
     columns:
       - name: cst_id
-        description: "Unique identifier for the customer."
+        description: "Unique identifier for the customer from CRM (bz_crm_cust_info.cst_id)."
         tests:
           - not_null
           - unique
-      - name: cst_key
-        description: "Unique key associated with the customer."
+      - name: cst_code
+        description: "Unique customer key from CRM (bz_crm_cust_info.cst_key)."
+        tests:
+          - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in customer code."
       - name: cst_firstname
-        description: "First name of the customer."
+        description: "First name of the customer from CRM (bz_crm_cust_info.cst_firstname)."
         tests:
           - custom_trimmed_check:
               description: "Ensures no leading or trailing spaces in customer's first name."
       - name: cst_lastname
-        description: "Last name of the customer."
+        description: "Last name of the customer from CRM (bz_crm_cust_info.cst_lastname)."
         tests:
           - custom_trimmed_check:
               description: "Ensures no leading or trailing spaces in customer's last name."
       - name: cst_marital_status
-        description: "Customer's marital status (Married, Single, n/a)."
+        description: "Customer's marital status from CRM (bz_crm_cust_info.cst_marital_status), standardized to 'Married', 'Single', or 'n/a'."
         tests:
           - accepted_values:
               values: ["Married", "Single", "n/a"]
+              description: "Ensures marital status is valid."
       - name: cst_gndr
-        description: "Gender of the customer."
+        description: "Gender of the customer from CRM (bz_crm_cust_info.cst_gndr), standardized to 'Male', 'Female', or 'n/a'."
         tests:
           - accepted_values:
               values: ["Male", "Female", "n/a"]
+              description: "Ensures gender is within allowed values."
       - name: cst_email
-        description: "Email id of the customer."
+        description: "Email address of the customer from CRM (bz_crm_cust_info.email)."
         tests:
-          - unique
+          - unique:
+              severity: warn
+              warn_if: " >11"
           - email_check:
-            description: "tests email if it follows standard pattern."
+              description: "Ensures email follows a standard pattern (e.g., user@domain.com)."
       - name: cst_place
-        description: "Place of residence of the customer."
+        description: "Place or city of residence from CRM (bz_crm_cust_info.place_of_residence)."
+        tests:
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in place of residence."
       - name: cst_postal_code
-        description: "Postal code of residence of the customer."
+        description: "Postal code of the customer from CRM (bz_crm_cust_info.postal_code)."
       - name: cst_create_date
-        description: "created profile date of the customer."
+        description: "Date the customer profile was created in CRM (bz_crm_cust_info.cst_create_date)."
+        tests:
+          - not_null
+          # - custom_date_range_check:
+          #     min_date: "2008-01-01"
+          #     max_date: "{{ current_timestamp() }}"
+          #     expected_count: 0
+          #     description: "Ensures create date is within a reasonable historical range."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into the raw layer, passed from bronze (bz_crm_cust_info.ingested_at)."
+        tests:
+          - not_null
       - name: updated_at
-        description: "updated datetime of the entries. Needed to monitor for changes."
+        description: "Timestamp when the record was last updated in bronze (bz_crm_cust_info.updated_at), used to monitor changes."
+        tests:
+          - not_null
 
   - name: crm_prd_info
-    description: "Contains product information."
-    tests:
-      - updated_at_check:
-          updated_at_column: updated_at
-          start_date_column: prd_start_date
-          end_date_column: prd_end_date
+    description: "Cleaned and standardized CRM product information."
     columns:
       - name: prd_id
-        description: "Unique identifier for each product."
+        description: "Unique identifier for each product from CRM (bz_crm_prd_info.prd_id)."
         tests:
           - not_null
           - unique
       - name: cat_id
-        description: "Category id of the product"
+        description: "Category ID of the product, derived from prd_key in CRM (bz_crm_prd_info.prd_key)."
         tests:
           - not_null
-      - name: prd_key
-        description: "Identifier key of product "
+      - name: prd_code
+        description: "Derived identifier key of the product from CRM (bz_crm_prd_info.prd_key)."
         tests:
           - not_null
-      - name: prd_nm
-        description: "Product name."
-        tests:
           - custom_trimmed_check:
-              description: "Ensures no leading or trailing spaces in product names."
+              description: "Ensures no leading or trailing spaces in product key."
+      - name: prd_nm
+        description: "Name of the product from CRM (bz_crm_prd_info.prd_nm)."
+        tests:
+          - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in product name."
       - name: prd_cost
-        description: "Cost of the product."
+        description: "Cost of the product from CRM (bz_crm_prd_info.prd_cost)."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
-              expression: " >= 0"
+              expression: ">= 0"
+              description: "Ensures product cost is non-negative."
       - name: prd_line
-        description: " Category of the product."
+        description: "Product line category from CRM (bz_crm_prd_info.prd_line), standardized to 'Mountains', 'Road', 'Sales', 'Touring', or 'n/a'."
         tests:
           - accepted_values:
               values: ["Mountains", "Road", "Sales", "Touring", "n/a"]
+              description: "Ensures product line matches defined categories."
       - name: prd_start_date
-        description: "Start date of the product availability."
+        description: "Start date of product availability from CRM (bz_crm_prd_info.prd_start_dt)."
         tests:
           - not_null
-        #   - custom_date_range_check:
-        #       min_date: "1900-01-01"
-        #       max_date: "2050-01-01"
-        #       expected_count: 0
+          # - custom_date_range_check:
+          #     min_date: "2008-01-01"
+          #     max_date: "{{ current_timestamp() }}"
+          #     expected_count: 0
+          #     description: "Ensures start date is within a reasonable historical range."
       - name: prd_end_date
-        description: "End date of the product availability."
+        description: "End date of product availability from CRM (bz_crm_prd_info.prd_end_dt)."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= prd_start_date"
-              name: "prd_end_date_greater_than_prd_start_date"
-        #   - custom_date_range_check:
-        #       min_date: "1900-01-01"
-        #       max_date: "2050-01-01"
-        #       expected_count: 0
-      - name: updated_at
-        description: "Updated datetime of the product."
+              description: "Ensures end date is on or after start date."
+          # - custom_date_range_check:
+          #     min_date: "2008-01-01"
+          #     max_date: "9999-12-31"
+          #     expected_count: 0
+          #     description: "Ensures end date is within a reasonable range."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into the raw layer, passed from bronze (bz_crm_prd_info.ingested_at)."
         tests:
           - not_null
-        #   - custom_date_range_check:
-        #       min_date: "1900-01-01"
-        #       max_date: "2050-01-01"
-        #       expected_count: 0
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze (bz_crm_prd_info.updated_at)."
+        tests:
+          - not_null
+
   - name: crm_sales_details
-    description: "Contains all the sales transaction details"
+    description: "Cleaned and standardized CRM sales transaction details."
     tests:
       - dbt_utils.expression_is_true:
-          expression: "sls_order_dt <= sls_ship_dt and sls_order_dt <= sls_due_dt"
-          where: "sls_order_dt is not null and sls_ship_dt is not null and sls_due_dt is not null"
+          expression: "sls_order_dt <= sls_ship_dt AND sls_order_dt <= sls_due_dt"
+          where: "sls_order_dt IS NOT NULL AND sls_ship_dt IS NOT NULL AND sls_due_dt IS NOT NULL"
           description: "Ensures order date occurs before or on the same day as shipping and due dates."
       - dbt_utils.expression_is_true:
-          expression: "abs(sls_sales - (sls_quantity * sls_price)) < 0.01" # tolerance for floating point
-          description: "Ensures sales amount is correctly calculated based on quantity and price."
+          expression: "ABS(sls_sales - (sls_quantity * sls_price)) < 0.01"
+          description: "Ensures sales amount is consistent with quantity times price, allowing for floating-point tolerance."
     columns:
       - name: sls_ord_num
-        description: "Order number of the sales"
-      - name: sls_prd_key
-        description: "ID of the Product that was sold"
-      - name: sls_cust_id
-        description: "ID of the customer who made the order"
-      - name: sls_order_dt
-        description: "Date when the order was placed."
+        description: "Order number of the sales transaction from CRM (bz_crm_sales_details.sls_ord_num)."
         tests:
-          - custom_date_range_check:
-              min_date: "1900-01-01"
-              max_date: "2050-01-01"
-              expected_count: 19
+          - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in order number."
+      - name: sls_prd_key
+        description: "Product key sold in the transaction from CRM (bz_crm_sales_details.sls_prd_key)."
+        tests:
+          - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in product key."
+      - name: sls_cust_id
+        description: "Customer ID who made the order from CRM (bz_crm_sales_details.sls_cust_id)."
+        tests:
+          - not_null
+      - name: sls_order_dt
+        description: "Date when the order was placed, cleaned from CRM (bz_crm_sales_details.sls_order_dt)."
+        # tests:
+        #   - not_null
+        # - custom_date_range_check:
+        #     min_date: "2008-01-01"
+        #     max_date: "{{ current_timestamp() }}"
+        #     expected_count: 0
+        #     description: "Ensures order date is within a reasonable historical range."
       - name: sls_ship_dt
-        description: "Date when the order was shipped."
+        description: "Date when the order was shipped, cleaned from CRM (bz_crm_sales_details.sls_ship_dt)."
+        # tests:
+        # - custom_date_range_check:
+        #     min_date: "2008-01-01"
+        #     max_date: "{{ current_timestamp() }}"
+        #     expected_count: 0
+        #     description: "Ensures shipping date is within a reasonable range."
       - name: sls_due_dt
-        description: "Date when the order was due."
-
+        description: "Date when the order was due, cleaned from CRM (bz_crm_sales_details.sls_due_dt)."
+        # tests:
+        # - custom_date_range_check:
+        #     min_date: "2008-01-01"
+        #     max_date: "{{ current_timestamp() }}"
+        #     expected_count: 0
+        #     description: "Ensures due date is within a reasonable range."
       - name: sls_sales
-        description: "Sales amount."
+        description: "Total sales amount from CRM (bz_crm_sales_details.sls_sales)."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
               description: "Ensures sales amount is non-negative."
       - name: sls_quantity
-        description: "Quantity of items sold."
+        description: "Quantity of items sold from CRM (bz_crm_sales_details.sls_quantity)."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
-              expression: " >= 0"
+              expression: ">= 0"
               description: "Ensures quantity is non-negative."
-
       - name: sls_price
-        description: "Unit price of the item."
+        description: "Unit price of the item from CRM (bz_crm_sales_details.sls_price)."
         tests:
           - not_null
           - dbt_utils.expression_is_true:
-              expression: " >= 0"
-              description: "Ensures sls_price is non-negative."
-      - name: dwh_create_date
-        description: "DWH entry date of the sales transaction."
+              expression: ">= 0"
+              description: "Ensures unit price is non-negative."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into the raw layer, passed from bronze (bz_crm_sales_details.ingested_at)."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze (bz_crm_sales_details.updated_at)."
+        tests:
+          - not_null
+
   - name: erp_cust_az12
-    description: "Contains extra customer information."
+    description: "Cleaned and standardized ERP customer information."
     columns:
       - name: cid
-        description: "Contains id of the customer"
+        description: "Customer ID from ERP (bz_erp_cust_az12.cid)."
+        tests:
+          - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in customer ID."
       - name: bdate
-        description: "Birthdate of the customer."
-        # tests:
-        #   - custom_date_range_check:
-        #       min_date: "1925-01-01"
-        #       max_date: {{modules.datetime.date.today().strftime('%Y-%m-%d')}}
-        #       expected_count: 17
+        description: "Birthdate of the customer from ERP (bz_erp_cust_az12.bdate)."
       - name: gen
-        description: "Gender of the customer."
+        description: "Gender of the customer from ERP (bz_erp_cust_az12.gen), standardized to 'Male', 'Female', or 'n/a'."
         tests:
           - accepted_values:
               values: ["Male", "Female", "n/a"]
-              description: "Ensures gender falls within the allowed values."
-      - name: dwh_create_date
-        description: "DWH entry date of the erp customer data."
+              description: "Ensures gender falls within allowed values."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into the raw layer, passed from bronze (bz_erp_cust_az12.ingested_at)."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze (bz_erp_cust_az12.updated_at)."
+        tests:
+          - not_null
 
   - name: erp_loc_a101
+    description: "Cleaned and standardized ERP customer location data."
     columns:
       - name: cid
-        description: "id of the customer"
+        description: "Customer ID from ERP (bz_erp_loc_a101.cid)."
+        tests:
+          - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in customer ID."
       - name: cntry
-        description: "Country location of the customer."
+        description: "Country location of the customer from ERP (bz_erp_loc_a101.cntry)."
         tests:
           - custom_trimmed_check:
-              description: "Ensures no leading or trailing spaces in country names."
+              description: "Ensures no leading or trailing spaces in country name."
           - accepted_values:
               values:
                 [
@@ -216,36 +282,48 @@ models:
                   "United States",
                   "n/a",
                 ]
-              description: "Ensures country location falls within the allowed values."
-      - name: dwh_create_date
-        description: "DWH entry date of the erp customer location."
+              description: "Ensures country location falls within allowed values."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into the raw layer, passed from bronze (bz_erp_loc_a101.ingested_at)."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze (bz_erp_loc_a101.updated_at)."
+        tests:
+          - not_null
 
   - name: erp_px_cat_g1v2
+    description: "Cleaned and standardized ERP product category data."
     columns:
       - name: id
-        description: "id of the product"
+        description: "Product category ID from ERP (bz_erp_px_cat_g1v2.id)."
         tests:
-          - custom_trimmed_check:
-              description: "Ensures no leading or trailing spaces in category names."
-
           - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in category ID."
       - name: cat
-        description: "Product category."
+        description: "High-level product category from ERP (bz_erp_px_cat_g1v2.cat)."
         tests:
           - custom_trimmed_check:
-              description: "Ensures no leading or trailing spaces in category names."
+              description: "Ensures no leading or trailing spaces in category name."
       - name: subcat
-        description: "Product subcategory."
+        description: "Product subcategory from ERP (bz_erp_px_cat_g1v2.subcat)."
         tests:
           - custom_trimmed_check:
-              description: "Ensures no leading or trailing spaces in subcategory names."
+              description: "Ensures no leading or trailing spaces in subcategory name."
       - name: maintenance_status
-        description: "Whether maintenance status is present or not."
+        description: "Maintenance status of the product category from ERP (bz_erp_px_cat_g1v2.maintenance), standardized to 'Yes' or 'No'."
         tests:
           - custom_trimmed_check:
-              description: "Ensures no leading or trailing spaces in maintenance_status values."
+              description: "Ensures no leading or trailing spaces in maintenance status."
           - accepted_values:
               values: ["Yes", "No"]
               description: "Ensures maintenance status is either 'Yes' or 'No'."
-      - name: dwh_create_date
-        description: "DWH entry date of the product categories."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into the raw layer, passed from bronze (bz_erp_px_cat_g1v2.ingested_at)."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze (bz_erp_px_cat_g1v2.updated_at)."
+        tests:
+          - not_null

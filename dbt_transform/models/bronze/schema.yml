@@ -14,8 +14,187 @@ sources:
 
 models:
   - name: bz_crm_cust_info
+    description: "Raw CRM customer information with added updated_at timestamp."
+    columns:
+      - name: cst_id
+        description: "Unique identifier for the customer from CRM."
+        tests:
+          - not_null
+          - unique
+      - name: cst_key
+        description: "Customer key from CRM."
+        tests:
+          - not_null
+      - name: cst_firstname
+        description: "First name of the customer from CRM."
+      - name: cst_lastname
+        description: "Last name of the customer from CRM."
+      - name: cst_marital_status
+        description: "Marital status of the customer from CRM."
+      - name: cst_gndr
+        description: "Gender of the customer from CRM."
+      - name: cst_create_date
+        description: "Date the customer record was created in CRM."
+        tests:
+          - not_null
+      - name: cst_email
+        description: "Email address of the customer from CRM."
+        tests:
+          - unique:
+              severity: warn
+          - email_check
+      - name: cst_place
+        description: "Place or city of residence from CRM."
+      - name: cst_postal_code
+        description: "Postal code of the customer from CRM."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into raw layer."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze layer."
+        tests:
+          - not_null
+
   - name: bz_crm_prd_info
+    description: "Raw CRM product information with added updated_at timestamp."
+    columns:
+      - name: prd_id
+        description: "Unique identifier for the product from CRM."
+        tests:
+          - not_null
+          - unique
+      - name: prd_key
+        description: "Product key from CRM."
+        tests:
+          - not_null
+      - name: prd_nm
+        description: "Name of the product from CRM."
+      - name: prd_cost
+        description: "Cost of the product from CRM."
+      - name: prd_line
+        description: "Product line category from CRM."
+      - name: prd_start_dt
+        description: "Start date of product availability from CRM."
+        tests:
+          - not_null
+      - name: prd_end_dt
+        description: "End date of product availability from CRM."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into raw layer."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze layer."
+        tests:
+          - not_null
+
   - name: bz_crm_sales_details
+    description: "Raw CRM sales details with added updated_at timestamp."
+    columns:
+      - name: sls_ord_num
+        description: "Sales order number from CRM."
+        tests:
+          - not_null
+      - name: sls_prd_key
+        description: "Product key associated with the sale from CRM."
+        tests:
+          - not_null
+      - name: sls_cust_id
+        description: "Customer ID associated with the sale from CRM."
+        tests:
+          - not_null
+      - name: sls_order_dt
+        description: "Order date as an integer (e.g., 20230405) from CRM."
+        tests:
+          - valid_date_format:
+              description: "Ensures raw sales order date is an 8-digit numeric string."
+              severity: warn
+      - name: sls_ship_dt
+        description: "Shipping date as an integer (e.g., 20230405) from CRM."
+        tests:
+          - valid_date_format:
+              description: "Ensures raw shipping date is an 8-digit numeric string."
+              severity: warn
+      - name: sls_due_dt
+        description: "Due date as an integer (e.g., 20230405) from CRM."
+        tests:
+          - valid_date_format:
+              description: "Ensures raw due date is an 8-digit numeric string."
+              severity: warn
+      - name: sls_sales
+        description: "Total sales amount from CRM."
+      - name: sls_quantity
+        description: "Quantity sold from CRM."
+        tests:
+          - not_null
+      - name: sls_price
+        description: "Unit price from CRM."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into raw layer."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze layer."
+        tests:
+          - not_null
+
   - name: bz_erp_cust_az12
+    description: "Raw ERP customer details with added updated_at timestamp."
+    columns:
+      - name: cid
+        description: "Customer ID from ERP."
+        tests:
+          - not_null
+      - name: bdate
+        description: "Birthdate of the customer from ERP."
+      - name: gen
+        description: "Gender of the customer from ERP."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into raw layer."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze layer."
+        tests:
+          - not_null
+
   - name: bz_erp_loc_a101
+    description: "Raw ERP customer location data with added updated_at timestamp."
+    columns:
+      - name: cid
+        description: "Customer ID from ERP."
+        tests:
+          - not_null
+      - name: cntry
+        description: "Country of the customer from ERP."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into raw layer."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze layer."
+        tests:
+          - not_null
+
   - name: bz_erp_px_cat_g1v2
+    description: "Raw ERP product category data with added updated_at timestamp."
+    columns:
+      - name: id
+        description: "Category ID from ERP."
+        tests:
+          - not_null
+      - name: cat
+        description: "Product category from ERP."
+      - name: subcat
+        description: "Product subcategory from ERP."
+      - name: maintenance
+        description: "Maintenance status of the product from ERP."
+      - name: ingested_at
+        description: "Timestamp when the record was ingested into raw layer."
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Timestamp when the record was last updated in bronze layer."
+        tests:
+          - not_null
