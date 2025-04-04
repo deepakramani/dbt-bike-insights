@@ -1,0 +1,75 @@
+snapshots:
+  - name: customers_snapshot
+    description: "Combined snapshot of customer data from CRM and ERP sources in silver schema."
+    config:
+      schema: "snapshots"
+      unique_key: "cst_id"
+      strategy: "timestamp"
+      updated_at: "snapshot_updated_at"
+      dbt_valid_to_current: "'9999-12-31'::timestamp"
+      hard_deletes: "new_record"
+    columns:
+      - name: cst_code
+        tests:
+          - relationships:
+              field: "cid"
+              to: ref('erp_cust_az12')
+          - relationships:
+              field: "cid"
+              to: ref('erp_loc_a101')
+      - name: dbt_valid_from
+        tests:
+          - not_null
+      - name: dbt_valid_to
+        tests:
+          - not_null
+      - name: dbt_updated_at
+        tests:
+          - not_null
+      - name: dbt_scd_id
+        tests:
+          - not_null
+          - unique
+
+  - name: products_snapshot
+    description: "Combined snapshot of product data from CRM and ERP sources in silver schema."
+    config:
+      schema: "snapshots"
+      unique_key: "prd_id"
+      strategy: "timestamp"
+      updated_at: "snapshot_updated_at"
+      dbt_valid_to_current: "'9999-12-31'::timestamp"
+      hard_deletes: "new_record"
+    columns:
+      - name: cat_id
+        tests:
+          - relationships:
+              field: id
+              to: ref('erp_px_cat_g1v2')
+              config:
+                severity: warn
+      - name: prd_cost
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: erp_maintenance_status
+        tests:
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in maintenance status."
+          - accepted_values:
+              values: ["Yes", "No"]
+              description: "Ensures maintenance status is either 'Yes' or 'No'."
+      - name: dbt_valid_from
+        tests:
+          - not_null
+      - name: dbt_valid_to
+        tests:
+          - not_null
+      - name: dbt_updated_at
+        tests:
+          - not_null
+      - name: dbt_scd_id
+        tests:
+          - not_null
+          - unique
