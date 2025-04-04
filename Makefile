@@ -15,54 +15,67 @@ help:
 	    @echo "  5. make up                      # Start the ETL DWH environment"
 	    @echo "  6. make pg                      # Connect to PostgreSQL using pgcli"
 	    @echo "  7. make down                    # Stop and remove the ETL DWH environment"
-	    @echo "  8. make run_silver              # Run dbt models for the silver layer"
-	    @echo "  9. make run_gold                # Run dbt models for the gold layer"
-	    @echo " 10. make run_analytics           # Run analytics models"
-	    @echo " 11. make load_gold_tables        # Load gold tables to DuckDB"
-	    @echo " 12. make test_silver             # Test Silver layer"
-	    @echo " 13. make test_gold               # Test Gold layer"
-	    @echo " 14. make compile_analyses        # Compile Analyses queries"
+		@echo "  8. make run_bronze              # Run dbt models for the bronze layer"
+	    @echo "  9. make run_silver              # Run dbt models for the silver layer"
+		@echo " 10. make run_snapshot            # Run dbt snapshots on the silver layer"
+	    @echo " 11. make run_gold                # Run dbt models for the gold layer"
+	    @echo " 12. make run_analytics           # Run analytics models"
+	    @echo " 13. make load_gold_tables        # Load gold tables to DuckDB"
+		@echo " 14. make test_bronze             # Test Bronze layer"
+	    @echo " 15. make test_silver             # Test Silver layer"
+		@echo " 16. make test_snapshots			 # Test SCD2 Snapshots"
+	    @echo " 17. make test_gold               # Test Gold layer"
+	    @echo " 18. make compile_analyses        # Compile Analyses queries"
 	    @echo "Run 'make <target>' to execute a specific step."
 
 install_docker:
-	    source ./docker/scripts/install_docker.sh
+	    source ./warehouse/scripts/install_docker.sh
 
 install_dbt:
-	    source ./docker/scripts/install_conda.sh
+	    source ./warehouse/scripts/install_conda.sh
 	    @sleep 2
 	    pip install --upgrade pip
 	    pip install pipenv
 	    pipenv install dbt-core dbt-postgres dbt-duckdb
 
 install_duckdb:
-	    source ./docker/scripts/install_duckdb.sh
+	    source ./warehouse/scripts/install_duckdb.sh
 	    @sleep 2
 
 pg:
 	    pgcli -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB}
 
 up:
-	    docker-compose -f docker/docker-compose.yml up -d
+	    docker-compose -f warehouse/docker-compose.yml up -d
 
 down:
-	    docker-compose -f docker/docker-compose.yml down -v
+	    docker-compose -f warehouse/docker-compose.yml down -v
 
 dbt_setup:
 	    dbt clean
-	    @echo -n "checking postgres DB connections..."
+	    @echo -n "checking postgres DB connections... "
 	    @sleep 2
 	    dbt debug --profile dbt_transform_postgres
-	    @echo -n "checking duckdb connections..."
+	    @echo -n "checking duckdb connections... "
 	    @sleep 1
 	    dbt debug --profile dbt_duckdb
-	    @echo -n "installing dependencies"
+	    @echo -n "installing dependencies. "
 	    @sleep 1
 	    dbt deps
+
+run_bronze:
+		dbt compile --model bronze --profile dbt_transform_postgres
+	    @sleep 2
+	    dbt run --select bronze
 
 run_silver:
 	    dbt compile --model silver --profile dbt_transform_postgres
 	    @sleep 2
 	    dbt run --select silver
+
+run_snapshot:
+		dbt snapshot
+		@sleep 1
 
 run_gold:
 	    dbt compile --model gold --profile dbt_transform_postgres
@@ -79,8 +92,16 @@ load_gold_tables:
 	    @sleep 1
 	    dbt run --select copy_gold_tables --profile dbt_duckdb
 
+test_bronze:
+	    dbt test --select bronze --profile dbt_transform_postgres
+
 test_silver:
 	    dbt test --select silver --profile dbt_transform_postgres
+
+test_snapshots:
+		dbt test --select customers_snapshot
+		@sleep 1
+		dbt test --select products_snapshot
 
 test_gold:
 	    dbt test --select gold --profile dbt_transform_postgres
