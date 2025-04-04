@@ -19,7 +19,10 @@
         customer_birthdate DATE,
         customer_gender VARCHAR,
         customer_country VARCHAR,
-        customer_marital_status VARCHAR
+        customer_marital_status VARCHAR,
+        customer_email VARCHAR,
+        customer_place VARCHAR,
+        customer_postal_code INT
       );
     {% endset %}
     {% do run_query(create_type_sql) %}

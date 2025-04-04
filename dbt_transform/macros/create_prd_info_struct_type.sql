@@ -13,8 +13,8 @@
     {% set create_type_sql %}
       CREATE SCHEMA IF NOT EXISTS analytics;
       CREATE TYPE analytics.product_struct AS STRUCT (
-        product_skey VARCHAR,
         product_key VARCHAR,
+        product_code VARCHAR,
         product_name VARCHAR,
         product_cost INT,
         product_category VARCHAR,
