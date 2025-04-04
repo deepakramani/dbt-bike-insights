@@ -21,8 +21,10 @@
 {% if target.type == 'duckdb' %} -- for dbt docs generate errors
   {{ copy_all_from_postgres_gold([
       {'pg_schema': 'gold', 'pg_table': 'fact_sales', 'duckdb_schema': 'gold', 'duckdb_table': 'fact_sales'},
-      {'pg_schema': 'gold', 'pg_table': 'dim_customers', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_customers'},
-      {'pg_schema': 'gold', 'pg_table': 'dim_products', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_products'}
+      {'pg_schema': 'gold', 'pg_table': 'dim_customers_current', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_customers_current'},
+      {'pg_schema': 'gold', 'pg_table': 'dim_products_current', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_products_current'},
+      {'pg_schema': 'gold', 'pg_table': 'dim_customers_hist', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_customers_hist'},
+      {'pg_schema': 'gold', 'pg_table': 'dim_products_hist', 'duckdb_schema': 'gold', 'duckdb_table': 'dim_products_hist'}
   ]) }}
 {% else %}
   -- This query will be used for documentation generation but never executed
