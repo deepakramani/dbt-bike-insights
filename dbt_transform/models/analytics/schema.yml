@@ -2,10 +2,10 @@ version: 2
 
 sources:
   - name: analytics_source
-    schema: gold # Enclose in quotes
+    schema: "gold" # Enclose in quotes
     tables:
-      - name: "dim_customers" # Enclose in quotes
-      - name: "dim_products" # Enclose in quotes
+      - name: "dim_customers_current" # Enclose in quotes
+      - name: "dim_products_current" # Enclose in quotes
       - name: "fact_sales" # Enclose in quotes
 
 models:

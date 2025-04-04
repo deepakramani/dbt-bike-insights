@@ -19,8 +19,8 @@ help:
 	    @echo "  9. make run_silver              # Run dbt models for the silver layer"
 		@echo " 10. make run_snapshot            # Run dbt snapshots on the silver layer"
 	    @echo " 11. make run_gold                # Run dbt models for the gold layer"
-	    @echo " 12. make run_analytics           # Run analytics models"
-	    @echo " 13. make load_gold_tables        # Load gold tables to DuckDB"
+	    @echo " 12. make load_gold_tables        # Load gold tables to DuckDB"
+		@echo " 13. make run_analytics           # Run analytics models"
 		@echo " 14. make test_bronze             # Test Bronze layer"
 	    @echo " 15. make test_silver             # Test Silver layer"
 		@echo " 16. make test_snapshots			 # Test SCD2 Snapshots"
@@ -64,12 +64,12 @@ dbt_setup:
 	    dbt deps
 
 run_bronze:
-		dbt compile --model bronze --profile dbt_transform_postgres
+		dbt compile --select bronze --profile dbt_transform_postgres
 	    @sleep 2
 	    dbt run --select bronze
 
 run_silver:
-	    dbt compile --model silver --profile dbt_transform_postgres
+	    dbt compile --select silver --profile dbt_transform_postgres
 	    @sleep 2
 	    dbt run --select silver
 
@@ -78,19 +78,21 @@ run_snapshot:
 		@sleep 1
 
 run_gold:
-	    dbt compile --model gold --profile dbt_transform_postgres
+	    dbt compile --select gold --profile dbt_transform_postgres
 	    @sleep 2
 	    dbt run --select gold
-
-run_analytics:
-	    dbt compile --model analytics --profile dbt_duckdb
-	    @sleep 1
-	    dbt run --select analytics --profile dbt_duckdb
 
 load_gold_tables:
 	    dbt compile --select copy_gold_tables --profile dbt_duckdb
 	    @sleep 1
 	    dbt run --select copy_gold_tables --profile dbt_duckdb
+
+run_analytics:
+	    dbt compile --select report_customers --profile dbt_duckdb
+	 	dbt compile --select report_products --profile dbt_duckdb   
+		@sleep 1
+		dbt run --select report_customers --profile dbt_duckdb
+		dbt run --select report_products --profile dbt_duckdb 
 
 test_bronze:
 	    dbt test --select bronze --profile dbt_transform_postgres
@@ -108,3 +110,6 @@ test_gold:
 
 compile_analyses:
 	    dbt compile --select analyses/** --profile dbt_duckdb
+
+docgen:
+		dbt docs generate --profile dbt_duckdb 

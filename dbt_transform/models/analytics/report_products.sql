@@ -29,16 +29,16 @@ Highlights:
 
 WITH dim_products_table AS (
     SELECT *
-    FROM  {{ source('analytics_source','dim_products') }}
+    FROM  {{ source('analytics_source','dim_products_current') }}
 ),
 fact_sales_table as (
     SELECT *
-    FROM {{ source('analytics_source', 'fact_sales') }}
+    FROM {{ source('analytics_source','fact_sales') }}
 ),
 product_base_query AS (
     SELECT
-        dp.product_skey,
         dp.product_key,
+        dp.product_code,
         dp.product_name,
         dp.product_cost,
         dp.product_category,
@@ -48,16 +48,15 @@ product_base_query AS (
         fs.sales_quantity,
         fs.sales_order_number,
         fs.sales_amount,
-        fs.customer_skey
+        fs.customer_key
     FROM fact_sales_table fs
-    left join dim_products_table dp on fs.product_skey = dp.product_skey
-    WHERE sales_order_date IS NOT NULL
+    left join dim_products_table dp on fs.product_key = dp.product_key
 ),
 product_agg AS (
     SELECT
         row(
-            product_skey,
             product_key,
+            product_code,
             product_name,
             product_cost,
             product_category,
@@ -67,7 +66,7 @@ product_agg AS (
         AS product_info,
         sum(sales_amount) as total_sales,
         count(distinct sales_order_number) as total_orders,
-        count(distinct customer_skey) as total_customers,
+        count(distinct customer_key) as total_customers,
         max(sales_order_date) as last_sale_date,
         date_diff('month', min(sales_order_date), max(sales_order_date)) as lifespan_in_month,
         avg(COALESCE(sales_amount/NULLIF(sales_quantity,0),0))::DECIMAL as avg_selling_price

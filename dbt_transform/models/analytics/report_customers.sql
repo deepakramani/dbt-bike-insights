@@ -29,11 +29,11 @@ Highlights:
 
 WITH dim_customers_table AS (
     SELECT *
-    FROM {{ source('analytics_source','dim_customers') }}
+    FROM {{ source('analytics_source','dim_customers_current') }}
 ),
 fact_sales_table as (
     SELECT *
-    FROM {{ source('analytics_source', 'fact_sales') }}
+    FROM {{ source('analytics_source','fact_sales') }}
 ), 
 customer_base_query as(
     SELECT
@@ -44,14 +44,17 @@ customer_base_query as(
         dc.customer_country,
         dc.customer_marital_status,
         date_diff('year', dc.customer_birthdate, current_date()) as age_in_years,
-        fs.product_skey,
+        customer_email,
+        customer_place,
+        customer_postal_code,
+        fs.product_key,
         fs.sales_order_number,
         fs.sales_order_date,
         fs.sales_amount,
         fs.sales_quantity
     from fact_sales_table fs
-    left join dim_customers_table dc on fs.customer_skey = dc.customer_skey
-    where fs.sales_order_date is not null
+    left join dim_customers_table dc on fs.customer_key = dc.customer_key
+    -- where fs.sales_order_date is not null
 ),
 customer_agg as (
     select
@@ -61,12 +64,15 @@ customer_agg as (
             customer_birthdate,
             customer_gender,
             customer_country,
-            customer_marital_status)::analytics.customer_bio_struct
+            customer_marital_status,
+            customer_email,
+            customer_place,
+            customer_postal_code)::analytics.customer_bio_struct
         as customer_bio,
         sum(sales_amount) as total_spending,
         count(distinct sales_order_number) as total_orders,
         sum(sales_quantity) as total_quantity,
-        COUNT(DISTINCT product_skey) AS total_products,
+        COUNT(DISTINCT product_key) AS total_products,
 	    MAX(sales_order_date) AS last_order_date,
 	    date_diff('month', MIN(sales_order_date), MAX(sales_order_date)) AS lifespan_in_months
     from customer_base_query
