@@ -17,7 +17,7 @@ select
     --'total_customer_per_country' as measure_name,
     customer_country,
     count(customer_skey) as total_customer_by_country
-from {{ source('analytics_source', 'dim_customers') }} -- gold.dim_customers
+from {{ source('analytics_source', 'dim_customers_current') }} -- gold.dim_customers
 group by customer_country
 order by total_customer_by_country desc;
 
@@ -36,7 +36,7 @@ n/a,337
 select
     customer_gender, customer_country,
     count(customer_skey) as total_customer_by_gender_country
-from {{ source('analytics_source', 'dim_customers') }}--gold.dim_customers
+from {{ source('analytics_source', 'dim_customers_current') }}--gold.dim_customers
 group by customer_gender, customer_country
 order by total_customer_by_gender_country desc;
 
@@ -66,7 +66,7 @@ n/a,United States,1
 select
     product_category,
     count(product_skey) as total_products_by_category
-from {{ source('analytics_source', 'dim_products') }}--gold.dim_products
+from {{ source('analytics_source', 'dim_products_current') }}--gold.dim_products
 group by product_category
 order by total_products_by_category desc;
 
@@ -83,7 +83,7 @@ select
     product_category,
     round(avg(product_cost),2) as avg_product_cost
     --count(product_skey) as total_products_by_category
-from {{ source('analytics_source', 'dim_products') }} --gold.dim_products
+from {{ source('analytics_source', 'dim_products_current') }} --gold.dim_products
 group by product_category
 order by avg_product_cost desc;
 
@@ -93,7 +93,7 @@ Select
     avg(dp.product_cost) as avg_product_cost_per_category,
     sum(fs.sales_amount) as total_revenue_per_category
 from {{ source('analytics_source', 'fact_sales') }} --gold.fact_sales fs
-left join {{ source('analytics_source', 'dim_products') }} dp on fs.product_skey=dp.product_skey
+left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey=dp.product_skey
 group by dp.product_category
 order by total_revenue_per_category desc;
 
@@ -109,7 +109,7 @@ Select
     dc.customer_key,
     sum(fs.sales_amount) as top_10_customers
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_customers') }} dc on fs.customer_skey=dc.customer_skey
+left join {{ source('analytics_source', 'dim_customers_current') }} dc on fs.customer_skey=dc.customer_skey
 group by dc.customer_key
 order by top_10_customers desc
 limit 10;
@@ -135,8 +135,8 @@ Select
     --dp.product_name,
     sum(fs.sales_quantity) as total_sold_items
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_customers') }} dc on fs.customer_skey=dc.customer_skey
-left join {{ source('analytics_source', 'dim_products') }} dp on fs.product_skey=dp.product_skey
+left join {{ source('analytics_source', 'dim_customers_current') }} dc on fs.customer_skey=dc.customer_skey
+left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey=dp.product_skey
 group by dc.customer_country--,dp.product_name
 order by total_sold_items desc;
 

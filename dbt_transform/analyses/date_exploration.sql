@@ -30,7 +30,7 @@ select
   date_part('year', min(customer_birthdate)) as oldest_year_pg,
   extract(year from age(max(customer_birthdate),min(customer_birthdate))) as diff_age_pg
   -- date_part('year', max(customer_birthdate) - min(customer_birthdate)) as youngest_age1
-from  {{ source('analytics_source', 'dim_customers') }};
+from  {{ source('analytics_source', 'dim_customers_current') }};
 
 
 -- how many years of sales are available

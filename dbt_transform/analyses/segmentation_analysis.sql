@@ -27,7 +27,7 @@ SELECT
         WHEN product_cost between 500  and 1000 then '500-1000'
         ELSE 'above 1000'
     END  as product_cost_range
-from {{ source('analytics_source', 'dim_products') }}
+from {{ source('analytics_source', 'dim_products_current') }}
 )
 select
     product_cost_range,
@@ -53,7 +53,7 @@ WITH customer_spending as (
     max(sales_order_date) as last_order,
     datediff('month', min(sales_order_date), max(sales_order_date) ) as lifespan
     from {{ source('analytics_source', 'fact_sales') }} fs
-    left join {{ source('analytics_source', 'dim_customers') }}  dc on fs.customer_skey = dc.customer_skey
+    left join {{ source('analytics_source', 'dim_customers_current') }}  dc on fs.customer_skey = dc.customer_skey
 group by dc.customer_key
 ),
 customer_seg as (

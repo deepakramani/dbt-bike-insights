@@ -22,7 +22,7 @@ select
     dp.product_category,
     sum(fs.sales_amount) as total_sales_per_product
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_products') }} dp on fs.product_skey = dp.product_skey
+left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey = dp.product_skey
 group by dp.product_key, dp.product_name, dp.product_category
 order by total_sales_per_product desc
 limit 5;
@@ -43,7 +43,7 @@ with product_revenue as (
         dp.product_name,
         sum(fs.sales_amount) as total_sales_per_product
     from {{ source('analytics_source', 'fact_sales') }} fs
-    left join {{ source('analytics_source', 'dim_products') }} dp on fs.product_skey = dp.product_skey
+    left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey = dp.product_skey
     group by dp.product_name
 ),
 ranked_products as (
@@ -72,7 +72,7 @@ with product_revenue as (
         sum(fs.sales_amount) as total_sales_per_product,
         rank() over (order by sum(fs.sales_amount) desc) as rank_products
     from {{ source('analytics_source', 'fact_sales') }} fs
-    left join {{ source('analytics_source', 'dim_products') }} dp on fs.product_skey = dp.product_skey
+    left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey = dp.product_skey
     group by dp.product_name
 )
 select *
@@ -96,7 +96,7 @@ select dc.customer_key ,dc.customer_firstname, dc.customer_lastname,
        dense_rank() over(order by sum(fs.sales_amount) desc) as ranked_customers_d,
         --rank() over(order by sum(fs.sales_amount) desc) as ranked_customers_r,
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_customers') }} dc on fs.customer_skey = dc.customer_skey
+left join {{ source('analytics_source', 'dim_customers_current') }} dc on fs.customer_skey = dc.customer_skey
 group by dc.customer_key, dc.customer_firstname, dc.customer_lastname
 qualify ranked_customers_d <=10;
 
@@ -105,7 +105,7 @@ qualify ranked_customers_d <=10;
 with cte_ as (
     select  dc.customer_id ,dc.customer_firstname, dc.customer_lastname, count(distinct fs.sales_order_number) as total_orders
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_customers') }} dc on fs.customer_skey = dc.customer_skey
+left join {{ source('analytics_source', 'dim_customers_current') }} dc on fs.customer_skey = dc.customer_skey
 group by dc.customer_id , dc.customer_firstname, dc.customer_lastname
 order by  total_orders
 )

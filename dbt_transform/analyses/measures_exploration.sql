@@ -35,7 +35,7 @@ from {{ source('analytics_source','fact_sales') }}; --27659
 -- Find the total number of products
 select
     count( product_key) as total_products
-from {{ source('analytics_source','dim_products') }}; -- 295
+from {{ source('analytics_source','dim_products_current') }}; -- 295
 select
     count( distinct product_skey) as total_products
 from {{ source('analytics_source','fact_sales') }}; --130
@@ -43,7 +43,7 @@ from {{ source('analytics_source','fact_sales') }}; --130
 -- Find the total number of customers
 select
     count(customer_skey) as total_customers
-from {{ source('analytics_source','dim_customers') }}; --18484
+from {{ source('analytics_source','dim_customers_current') }}; --18484
 
 -- Find the total number of customers that has placed an order
 select
@@ -54,10 +54,10 @@ from {{ source('analytics_source','fact_sales') }}; --18484
 
 -- Generate a comprehensive business metrics 
 with customer_source as (
-    Select * from {{ source('analytics_source','dim_customers') }}
+    Select * from {{ source('analytics_source','dim_customers_current') }}
 ),
 products_source as (
-    Select * from {{ source('analytics_source','dim_products') }}
+    Select * from {{ source('analytics_source','dim_products_current') }}
 ),
 sales_source as (
     Select * from {{ source('analytics_source','fact_sales') }}
