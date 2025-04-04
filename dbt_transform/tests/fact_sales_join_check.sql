@@ -1,10 +1,10 @@
 SELECT 
     fs.*
 FROM {{ ref('fact_sales') }} fs
-LEFT JOIN {{ ref('dim_customers') }} dc 
-    ON dc.customer_skey = fs.customer_skey
-LEFT JOIN {{ ref('dim_products') }} dp 
-    ON dp.product_skey = fs.product_skey
+LEFT JOIN {{ ref('dim_customers_current') }} dc 
+    ON dc.customer_key = fs.customer_key
+LEFT JOIN {{ ref('dim_products_current') }} dp 
+    ON dp.product_key = fs.product_key
 WHERE 
-    dc.customer_skey IS NULL 
-    OR dp.product_skey IS NULL
+    dc.customer_key IS NULL 
+    OR dp.product_key IS NULL
