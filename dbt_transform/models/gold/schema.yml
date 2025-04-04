@@ -13,14 +13,10 @@ sources:
       - name: erp_px_cat_g1v2
 
 models:
-  - name: dim_customers
+  - name: dim_customers_current
     description: "Customer dimension table, integrating CRM and ERP customer data."
-    # depends_on:
-    #   - source('gold_source', 'crm_cust_info')
-    #   - source('gold_source', 'erp_cust_az12')
-    #   - source('gold_source', 'erp_loc_a101')
     columns:
-      - name: customer_skey
+      - name: customer_key
         description: "Surrogate key for the customer dimension, ensuring uniqueness."
         tests:
           - not_null
@@ -29,100 +25,295 @@ models:
         description: "Business key representing the customer ID."
         tests:
           - not_null
-      - name: customer_key
-        description: "customer key"
+      - name: customer_code
+        description: "Customer key from CRM, used to link with ERP data."
         tests:
           - not_null
           - relationships:
-              to: source('gold_source', 'erp_cust_az12')
+              to: ref('erp_cust_az12')
               field: cid
           - relationships:
-              to: source('gold_source', 'erp_loc_a101')
+              to: ref('erp_loc_a101')
               field: cid
       - name: customer_firstname
-        description: "First name of the customer."
+        description: "First name of the customer from CRM"
         tests:
           - custom_trimmed_check:
               description: "Ensures no leading or trailing spaces in customer's first name."
       - name: customer_lastname
-        description: "Last name of the customer."
+        description: "Last name of the customer from CRM"
         tests:
           - custom_trimmed_check:
               description: "Ensures no leading or trailing spaces in customer's last name."
-      - name: customer_marital_status
-        description: "Customer's marital status (Married, Single, n/a)."
+      - name: customer_birthdate
+        description: "Birthdate of the customer from ERP (erp_cust_az12)."
         tests:
-          - accepted_values:
-              values: ["Married", "Single", "n/a"]
+          - dbt_utils.expression_is_true:
+              expression: "<= CURRENT_DATE - INTERVAL '18 years'"
+              description: "Customer must be at least 18 years old."
+              severity: warn
+              where: "customer_birthdate IS NOT NULL"
       - name: customer_gender
         description: "Gender of the customer as recorded in CRM or ERP with preference given to CRM database."
         tests:
           - accepted_values:
               values: ["Male", "Female", "n/a"]
               description: "Ensures gender falls within the allowed values."
+      - name: customer_marital_status
+        description: "Customer's marital status from CRM."
+        tests:
+          - accepted_values:
+              values: ["Married", "Single", "n/a"]
+              description: "Ensures marital status is valid."
+      - name: customer_country
+        description: "Country of the customer from ERP (erp_loc_a101)."
+      - name: customer_email
+        description: "Email address of the customer from CRM."
+        tests:
+          - email_check:
+              # model_name: ref('dim_customers_current')
+              # column_name: customer_email
+              description: "Validates email format, ensuring it's not null, not 'unknown', and matches a standard email pattern."
+              severity: warn
+      - name: customer_place
+        description: "Place or city of the customer from CRM."
+      - name: customer_postal_code
+        description: "Postal code of the customer from CRM."
+      - name: customer_create_date
+        description: "Date when the customer record was created in CRM."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "<= CURRENT_DATE"
+              description: "Ensures create date is not in the future."
+  - name: dim_customers_hist
+    description: "Historical customer dimension table with SCD2 versioning, integrating CRM and ERP data."
+    columns:
+      - name: customer_key
+        description: "Surrogate key for each historical version of a customer."
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: "Business key representing the customer ID from CRM."
+        tests:
+          - not_null
+      - name: customer_code
+        description: "Customer key from CRM, used to link with ERP data."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('erp_cust_az12')
+              field: cid
+          - relationships:
+              to: ref('erp_loc_a101')
+              field: cid
+      - name: customer_firstname
+        description: "First name of the customer from CRM."
+        tests:
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in customer's first name."
+      - name: customer_lastname
+        description: "Last name of the customer from CRM."
+        tests:
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in customer's last name."
       - name: customer_birthdate
-        description: "Birthdate of the customer."
+        description: "Birthdate of the customer from ERP (erp_cust_az12)."
         tests:
           - dbt_utils.expression_is_true:
-              expression: " <= CURRENT_DATE - Interval '18 year' "
+              expression: "<= CURRENT_DATE - INTERVAL '18 years'"
               description: "Customer must be at least 18 years old."
+              severity: warn
+              where: "customer_birthdate IS NOT NULL"
+      - name: customer_gender
+        description: "Gender of the customer, prioritizing CRM (cst_gndr) over ERP (gen), defaulting to 'n/a'."
+        tests:
+          - accepted_values:
+              values: ["Male", "Female", "n/a"]
+              description: "Ensures gender falls within allowed values."
+      - name: customer_marital_status
+        description: "Customer's marital status from CRM."
+        tests:
+          - accepted_values:
+              values: ["Married", "Single", "n/a"]
+              description: "Ensures marital status is valid."
       - name: customer_country
-        description: "Country of the customer."
+        description: "Country of the customer from ERP (erp_loc_a101)."
+      - name: customer_email
+        description: "Email address of the customer from CRM."
+        tests:
+          - email_check:
+              # model_name: ref('dim_customers_current')
+              # column_name: customer_email
+              description: "Validates email format, ensuring it's not null, not 'unknown', and matches a standard email pattern."
+              severity: warn
+      - name: customer_place
+        description: "Place or city of the customer from CRM."
+      - name: customer_postal_code
+        description: "Postal code of the customer from CRM."
       - name: customer_create_date
-        description: "Date on which customer was created."
-  - name: dim_products
-    description: "Product dimension table, integrating CRM and ERP product data."
-    # depends_on:
-    #   - source('gold_source', 'crm_prd_info')
-    #   - source('gold_source', 'erp_px_cat_g1v2')
+        description: "Date when the customer record was created in CRM."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "<= CURRENT_DATE"
+              description: "Ensures create date is not in the future."
+      - name: valid_from
+        description: "Start date of this version's validity (SCD2)."
+        tests:
+          - not_null
+      - name: valid_to
+        description: "End date of this version's validity (SCD2)."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= valid_from"
+              description: "Ensures valid_to is on or after valid_from."
+
+  - name: dim_products_current
+    description: "Product dimension table, integrating CRM and ERP product data for current state."
     columns:
-      - name: product_skey
+      - name: product_key
         description: "Surrogate key for the product dimension."
         tests:
-          # - unique
           - not_null
+          - unique
       - name: product_id
-        description: "Business key representing the product ID."
+        description: "Business key representing the product ID from CRM."
         tests:
           - not_null
-      - name: product_key
-        description: "Identifer of the product."
+      - name: product_code
+        description: "Product code derived from CRM (part of prd_key)."
         tests:
           - not_null
       - name: product_name
-        description: "Name of the product."
+        description: "Name of the product from CRM."
         tests:
           - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in product name."
       - name: product_cat_id
-        description: "ID for the product category"
+        description: "Category ID derived from CRM (part of prd_key)."
         tests:
-          - relationships_active_products:
-              ref_model: source('gold_source', 'crm_prd_info')
-              ref_column: cat_id
-              description: "Ensures that each product category ID exists in the source product category table, maintaining referential integrity."
+          - not_null
+          # - relationships:
+          #     to: ref('erp_px_cat_g1v2')
+          #     field: id
+          #     description: "Ensures product category ID exists in ERP category table."
       - name: product_category
-        description: "High-level category of the product."
+        description: "High-level category of the product from ERP."
       - name: product_subcategory
-        description: "More specific classification within a product category."
+        description: "More specific classification within a product category from ERP."
       - name: product_maintenance_status
-        description: "Maintenance status of product"
+        description: "Maintenance status of the product from ERP."
         tests:
           - accepted_values:
               values: ["Yes", "No"]
               description: "Ensures maintenance status is either 'Yes' or 'No'."
       - name: product_cost
-        description: "Cost of the product."
+        description: "Cost of the product from CRM."
         tests:
           - dbt_utils.expression_is_true:
-              expression: " >= 0"
-              description: "Ensures product cost is not negative."
+              expression: ">= 0"
+              description: "Ensures product cost is non-negative."
       - name: product_line
-        description: "Category of the product"
+        description: "Product line category from CRM (e.g., Mountains, Road)."
+        tests:
+          - accepted_values:
+              values: ["Mountains", "Road", "Sales", "Touring", "n/a"]
+              description: "Ensures product line matches defined categories."
       - name: product_start_date
-        description: "Date when the product became available."
+        description: "Date when the product became available from CRM."
         tests:
           - not_null
-
+          - dbt_utils.expression_is_true:
+              expression: "<= CURRENT_DATE"
+              description: "Ensures start date is not in the future."
+      - name: product_end_date
+        description: "Date when the product was discontinued from CRM (9999-12-31 if active)."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= product_start_date"
+              description: "Ensures end date is on or after start date."
+  - name: dim_products_hist
+    description: "Historical product dimension table with SCD2 versioning, integrating CRM and ERP data."
+    columns:
+      - name: product_key
+        description: "Surrogate key for each historical version of a product."
+        tests:
+          - not_null
+          - unique
+      - name: product_id
+        description: "Business key representing the product ID from CRM."
+        tests:
+          - not_null
+      - name: product_code
+        description: "Product code derived from CRM (part of prd_key)."
+        tests:
+          - not_null
+      - name: product_name
+        description: "Name of the product from CRM."
+        tests:
+          - not_null
+          - custom_trimmed_check:
+              description: "Ensures no leading or trailing spaces in product name."
+      - name: product_cat_id
+        description: "Category ID derived from CRM (part of prd_key)."
+        tests:
+          - not_null
+          # - relationships:
+          #     to: ref('erp_px_cat_g1v2')
+          #     field: id
+          #     description: "Ensures product category ID exists in ERP category table."
+      - name: product_category
+        description: "High-level category of the product from ERP."
+      - name: product_subcategory
+        description: "More specific classification within a product category from ERP."
+      - name: product_maintenance_status
+        description: "Maintenance status of the product from ERP."
+        tests:
+          - accepted_values:
+              values: ["Yes", "No"]
+              description: "Ensures maintenance status is either 'Yes' or 'No'."
+      - name: product_cost
+        description: "Cost of the product from CRM."
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+              description: "Ensures product cost is non-negative."
+      - name: product_line
+        description: "Product line category from CRM (e.g., Mountains, Road)."
+        tests:
+          - accepted_values:
+              values: ["Mountains", "Road", "Sales", "Touring", "n/a"]
+              description: "Ensures product line matches defined categories."
+      - name: product_start_date
+        description: "Date when the product became available from CRM."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "<= CURRENT_DATE"
+              description: "Ensures start date is not in the future."
+      - name: product_end_date
+        description: "Date when the product was discontinued from CRM (9999-12-31 if active)."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= product_start_date"
+              description: "Ensures end date is on or after start date."
+      - name: valid_from
+        description: "Start date of this version’s validity (SCD2)."
+        tests:
+          - not_null
+      - name: valid_to
+        description: "End date of this version’s validity (SCD2)."
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= valid_from"
+              description: "Ensures valid_to is on or after valid_from."
   - name: fact_sales
     description: Sales fact table derived from the dim_customers and dim_products
     # depends_on:
@@ -130,8 +321,8 @@ models:
     #   - ref('dim_products')
     #   - source('gold_source', 'crm_sales_details')
     columns:
-      - name: sales_details_skey
-        description: "Unique surrogate key for each sales transaction. Generated using md5 algorithm combining columns sales_order_number, product_skey and customer_skey."
+      - name: sales_details_key
+        description: "Unique surrogate key for each sales transaction. Generated using md5 algorithm combining columns sales_order_number, product_key and customer_key."
         tests:
           - unique
           - not_null
@@ -139,22 +330,22 @@ models:
         description: "Identifier for the sales order."
         tests:
           - not_null
-      - name: product_skey
+      - name: product_key
         description: "Foreign key linking to the dim_products."
         tests:
           - relationships:
-              to: ref('dim_products')
-              field: product_skey
+              to: ref('dim_products_current')
+              field: product_key
               description: "Ensures every sales record is linked to a valid product."
-      - name: customer_skey
+      - name: customer_key
         description: "Foreign key linking to the dim_customers."
         tests:
           - relationships:
-              to: ref('dim_customers')
-              field: customer_skey
+              to: ref('dim_customers_current')
+              field: customer_key
               description: "Ensures every sales record is linked to a valid customer."
       - name: sales_amount
-        description: "Total sales amount for the transaction."
+        description: "Total sales amount for the transaction from CRM, adjusted in silver layer."
         tests:
           - dbt_utils.expression_is_true:
               expression: " >= 0"
@@ -162,34 +353,34 @@ models:
               where: "sales_amount IS NOT NULL"
               description: "Ensures sales amount is non-negative."
       - name: sales_quantity
-        description: "Quantity of products sold in the transaction."
+        description: "Total sales amount for the transaction from CRM, adjusted in silver layer."
         tests:
           - dbt_utils.expression_is_true:
-              expression: " >= 0"
+              expression: ">= 0"
               severity: warn
               where: "sales_quantity IS NOT NULL"
               description: "Ensures at least one unit is sold."
       - name: sales_price
-        description: "Unit price of each product"
+        description: "Unit price of each product from CRM, adjusted in silver layer."
       - name: sales_order_date
-        description: "Date when the order was placed."
+        description: "Date when the order was placed, cleaned from CRM data."
         tests:
           - dbt_utils.expression_is_true:
-              expression: " <= CURRENT_DATE"
-              description: "Sales date cannot be in the future"
+              expression: "<= CURRENT_DATE"
+              description: "Ensures sales order date is not in the future."
       - name: sales_shipping_date
-        description: "Shipping date of the order."
+        description: "Shipping date of the order, cleaned from CRM data."
         tests:
           - dbt_utils.expression_is_true:
-              expression: " >= sales_order_date"
+              expression: ">= sales_order_date"
               where: "sales_shipping_date IS NOT NULL AND sales_order_date IS NOT NULL"
               severity: warn
-              description: "Shipping date should not be before order date"
+              description: "Ensures shipping date is on or after order date."
       - name: sales_due_date
-        description: "Due date for the sales order."
+        description: "Due date for the sales order, cleaned from CRM data."
         tests:
           - dbt_utils.expression_is_true:
-              expression: " >= sales_order_date"
-              severity: warn
+              expression: ">= sales_order_date"
               where: "sales_due_date IS NOT NULL AND sales_order_date IS NOT NULL"
+              severity: warn
               description: "Ensures due date is on or after order date."
