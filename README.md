@@ -23,18 +23,21 @@ docker run --rm hello-world # should return "Hello from Docker!" without errors
 **Set environment variables:**
 
 ```{.bash filename="export env variables"}
-export POSTGRES_USER=postgres                                            
-export POSTGRES_PASSWORD=postgres
-export POSTGRES_HOST=localhost
-export POSTGRES_DB=sql_dwh_db
-export DBT_PROFILES_DIR=$(pwd)
+export POSTGRES_USER=postgres                             
+export POSTGRES_PASSWORD=postgres 
+export POSTGRES_HOST=localhost 
+export POSTGRES_DB=sql_dwh_db 
+export POSTGRES_PORT=5432 
+export DBT_PROJECT_DIR=$(pwd)/dbt_transform 
+export DBT_PROFILES_DIR=$(pwd)/dbt_transform 
+export DUCKDB_PATH=$(pwd)/dwh.duckdb
 ```
 
 Now we're ready start our project
 
 ```
 cd ~/etl_with_dbt_dwh 
-make up # runs the postgres docker container, creates bronze layer tables and loads data from csv files into it.
+make up # runs the postgres docker container, creates raw schema tables and loads data from csv files into it.
 conda create -n mydbt python=3.9 dbt-core dbt-postgres -y # install conda env with dbt-core and dbt-postgres packages.
 conda activate mydbt
 
@@ -44,11 +47,20 @@ Before we start `dbt`, make sure the `dbt_project.yml` is no errors, `macros` di
 
 ```{.bash filename="run dbt commands"}
 cd ~/etl_with_dbt_dwh  
-make dbt_setup # cleans, debugs dbt project for errors and installs dependencies
-make run_silver # runs only silver layer model
-make run_gold # runs only gold layer model
-make test_silver # data quality tests for silver layer tables
+make dbt_setup # clears dbt target cache, debugs dbt project for errors and installs dependencies
+make run_bronze # loads data into the bronze layer with minimal cleaning
+make test_bronze # tests bronze layer tables
+make run_silver # runs only silver layer model. Data is cleaned, transformed and enriched.
+make test_silver # tests silver layer tables
+make run_snapshot # builds SCD2 tables on the silver layer tables
+make test_snapshot # runs basic tests on the generated snapshot tables
+make run_gold # runs only gold layer model using snapshot as source. Data is ready for business.
 make test_gold # data quality tests for gold layer tables
+make load_gold_tables # copies gold layer data into duckDB for analytics
+make run_analytics # builds and runs analytics model
+make run_analyses # compiles ad-hoc analytic SQL queries.
+
+make docgen # generates and serves documentation
 ```
 
 # Explanation
@@ -75,17 +87,3 @@ These checks are written inside `schema.yml` allowing schema standardisation and
 
 Singular/specific test come under `tests` directory. We place a test that checks the gold layer view `fact_sales` which depends on `dim_customers` and `dim_products` forming a star schema inside the data warehouse. 
 
-
-
-
-Try running the following commands:
-- dbt run
-- dbt test
-
-
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices

@@ -26,6 +26,7 @@ help:
 		@echo " 16. make test_snapshots			 # Test SCD2 Snapshots"
 	    @echo " 17. make test_gold               # Test Gold layer"
 	    @echo " 18. make compile_analyses        # Compile Analyses queries"
+		@echo " 19. make docgen					 # Generates and serves documentation"
 	    @echo "Run 'make <target>' to execute a specific step."
 
 install_docker:
@@ -113,3 +114,5 @@ compile_analyses:
 
 docgen:
 		dbt docs generate --profile dbt_duckdb 
+		@sleep 2
+		dbt docs serve
