@@ -1,0 +1,10 @@
+
+
+
+
+select
+    1
+from "dwh"."gold"."dim_customers_current"
+
+where not(customer_create_date <= CURRENT_DATE)
+
