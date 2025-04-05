@@ -84,16 +84,15 @@ run_gold:
 	    dbt run --select gold
 
 load_gold_tables:
-	    dbt compile --select copy_gold_tables --profile dbt_duckdb
+	    dbt compile --select copy_gold_tables_to_duckdb --profile dbt_duckdb
 	    @sleep 1
-	    dbt run --select copy_gold_tables --profile dbt_duckdb
+	    dbt run --select copy_gold_tables_to_duckdb --profile dbt_duckdb
 
 run_analytics:
-	    dbt compile --select report_customers --profile dbt_duckdb
-	 	dbt compile --select report_products --profile dbt_duckdb   
+		dbt compile --select analytics --profile dbt_duckdb
 		@sleep 1
-		dbt run --select report_customers --profile dbt_duckdb
-		dbt run --select report_products --profile dbt_duckdb 
+		dbt run --select analytics --profile dbt_duckdb	
+	   
 
 test_bronze:
 	    dbt test --select bronze --profile dbt_transform_postgres
