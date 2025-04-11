@@ -95,7 +95,7 @@ select
         ELSE 'NEW'
     END as customer_status,
     last_order_date,
-    date_diff('month', last_order_date, '2015-01-01'::DATE) as recency_in_months,
+    date_diff('month', last_order_date, '2014-02-01'::DATE) as recency_in_months,
     CASE
         WHEN recency_in_months BETWEEN 0 and 3 THEN 'Recently active'
         WHEN recency_in_months BETWEEN 4 and 10 THEN 'Moderately active'

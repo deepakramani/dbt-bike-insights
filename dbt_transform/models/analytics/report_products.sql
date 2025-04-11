@@ -75,7 +75,7 @@ product_agg AS (
 )
 SELECT
     *,
-    date_diff('month', last_sale_date, '2015-01-01'::DATE) AS recency_in_months,
+    date_diff('month', last_sale_date, '2014-02-01'::DATE) AS recency_in_months,
     CASE
         WHEN recency_in_months BETWEEN 0 and 5 THEN 'Recently active'
         WHEN recency_in_months BETWEEN 6 and 12 THEN 'Moderately active'
