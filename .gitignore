@@ -9,3 +9,6 @@ Dockerfile
 
 dwh.duckdb
 *.wal
+
+#visualisation files
+lib/
