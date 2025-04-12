@@ -1,0 +1,17 @@
+PRODUCT AFFINITY ANALYSIS - BUSINESS INSIGHTS
+===========================================
+
+Strongest Category Pair: Accessories & Bikes (26.2%)
+Average Category Affinity: 18.29%
+
+Key Findings:
+  1. The strongest product affinity is between Accessories and Bikes at 26.2% of orders.
+  2. On average, product categories show 18.29% affinity across orders.
+  3. All three main product categories (Accessories, Bikes, Clothing) show significant cross-purchase behavior, suggesting opportunities for strategic merchandising.
+  4. The relationship between Accessories and Bikes is more than twice as strong as the relationship between Bikes and Clothing, indicating where cross-selling efforts may be most effective.
+
+Business Recommendations:
+  1. Store Layout: Position accessories displays near bike showcases to capitalize on the strong natural affinity between these categories.
+  2. Bundled Promotions: Create promotional bundles of bikes with popular accessories to increase average order value.
+  3. Online Recommendations: Implement 'Frequently Bought Together' suggestions based on these affinity patterns in the e-commerce platform.
+  4. Sales Training: Train staff to suggest clothing items during accessory purchases, as this shows a stronger relationship than Bikes-Clothing.

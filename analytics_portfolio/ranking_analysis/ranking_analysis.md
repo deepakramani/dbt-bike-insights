@@ -1,0 +1,1 @@
+Go here for [ranking analysis query ->](../../dbt_transform/analyses/ranking_exploration.sql).
