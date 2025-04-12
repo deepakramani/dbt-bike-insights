@@ -53,7 +53,7 @@ WITH customer_spending as (
     max(sales_order_date) as last_order,
     datediff('month', min(sales_order_date), max(sales_order_date) ) as lifespan
 from gold.fact_sales fs
-left join gold.dim_customers dc on fs.customer_skey = dc.customer_skey
+left join gold.dim_customers dc on fs.customer_key = dc.customer_key
 group by dc.customer_key
 ),
 customer_seg as (

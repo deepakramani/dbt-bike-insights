@@ -21,7 +21,7 @@ Highlights:
 ===============================================================================
 */
 CREATE TYPE gold.product_struct AS STRUCT(
-    product_skey VARCHAR,
+    product_key VARCHAR,
     product_key VARCHAR,
     product_name VARCHAR,
     product_cost INT,
@@ -35,7 +35,7 @@ CREATE TYPE gold.product_struct AS STRUCT(
 CREATE OR REPLACE VIEW gold.report_products AS
 WITH product_base_query AS (
     SELECT
-        dp.product_skey,
+        dp.product_key,
         dp.product_key,
         dp.product_name,
         dp.product_cost,
@@ -46,15 +46,15 @@ WITH product_base_query AS (
         fs.sales_quantity,
         fs.sales_order_number,
         fs.sales_amount,
-        fs.customer_skey
+        fs.customer_key
     FROM gold.fact_sales fs
-    left join gold.dim_products dp on fs.product_skey = dp.product_skey
+    left join gold.dim_products dp on fs.product_key = dp.product_key
     WHERE sales_order_date IS NOT NULL
 ),
 product_agg AS (
     SELECT
         row(
-            product_skey,
+            product_key,
             product_key,
             product_name,
             product_cost,
@@ -65,7 +65,7 @@ product_agg AS (
         AS product_info,
         sum(sales_amount) as total_sales,
         count(distinct sales_order_number) as total_orders,
-        count(distinct customer_skey) as total_customers,
+        count(distinct customer_key) as total_customers,
         max(sales_order_date) as last_sale_date,
         date_diff('month', min(sales_order_date), max(sales_order_date)) as lifespan_in_month,
         avg(COALESCE(sales_amount/NULLIF(sales_quantity,0),0))::DECIMAL as avg_selling_price

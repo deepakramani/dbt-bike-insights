@@ -41,13 +41,13 @@ WITH customer_base_query as(
         dc.customer_country,
         dc.customer_marital_status,
         date_diff('year', dc.customer_birthdate, current_date()) as age_in_years,
-        fs.product_skey,
+        fs.product_key,
         fs.sales_order_number,
         fs.sales_order_date,
         fs.sales_amount,
         fs.sales_quantity
     from gold.fact_sales fs
-    left join gold.dim_customers dc on fs.customer_skey = dc.customer_skey
+    left join gold.dim_customers dc on fs.customer_key = dc.customer_key
     where fs.sales_order_date is not null
 ),
 customer_agg as (
@@ -63,7 +63,7 @@ customer_agg as (
         sum(sales_amount) as total_spending,
         count(distinct sales_order_number) as total_orders,
         sum(sales_quantity) as total_quantity,
-        COUNT(DISTINCT product_skey) AS total_products,
+        COUNT(DISTINCT product_key) AS total_products,
 	    MAX(sales_order_date) AS last_order_date,
 	    date_diff('month', MIN(sales_order_date), MAX(sales_order_date)) AS lifespan_in_months
     from customer_base_query
