@@ -9,6 +9,15 @@ dbt-duckdb = "==1.9.2"
 dbt-postgres = "==1.9.0"
 
 [dev-packages]
+pandas = "*"
+numpy = "*"
+matplotlib = "*"
+seaborn = "*"
+networkx = "*"
+plotly = "*"
+pyvis = "*"
+kaleido = "*"
+
 
 [requires]
 python_version = ">3.9"
