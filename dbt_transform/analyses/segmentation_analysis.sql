@@ -53,7 +53,7 @@ WITH customer_spending as (
     max(sales_order_date) as last_order,
     datediff('month', min(sales_order_date), max(sales_order_date) ) as lifespan
     from {{ source('analytics_source', 'fact_sales') }} fs
-    left join {{ source('analytics_source', 'dim_customers_current') }}  dc on fs.customer_skey = dc.customer_skey
+    left join {{ source('analytics_source', 'dim_customers_current') }}  dc on fs.customer_key = dc.customer_key
 group by dc.customer_key
 ),
 customer_seg as (

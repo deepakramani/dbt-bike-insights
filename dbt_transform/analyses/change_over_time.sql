@@ -18,7 +18,7 @@ select
     year(sales_order_date) as order_year,
     --month(sales_order_date) as order_month,
     sum(sales_amount) as total_sales,
-    count(distinct customer_skey) as total_customers,
+    count(distinct customer_key) as total_customers,
     sum(sales_quantity) as total_items,
 from {{ source('analytics_source', 'fact_sales') }}
 where sales_order_date is not null
@@ -39,7 +39,7 @@ select
 --     year(sales_order_date) as order_year,
     month(sales_order_date) as order_month,
     sum(sales_amount) as total_sales,
-    count(distinct customer_skey) as total_customers,
+    count(distinct customer_key) as total_customers,
     sum(sales_quantity) as total_items,
 from  {{ source('analytics_source', 'fact_sales') }}
 where sales_order_date is not null
@@ -51,7 +51,7 @@ with monthly_sales as (select
 --     year(sales_order_date) as order_year,
     month(sales_order_date) as order_month,
     sum(sales_amount) as total_sales,
-    count(distinct customer_skey) as total_customers,
+    count(distinct customer_key) as total_customers,
     sum(sales_quantity) as total_items,
 from  {{ source('analytics_source', 'fact_sales') }}
 where sales_order_date is not null
@@ -73,7 +73,7 @@ with monthly_sales as (select
 --     year(sales_order_date) as order_year,
     month(sales_order_date) as order_month,
     sum(sales_amount) as total_sales,
-    count(distinct customer_skey) as total_customers,
+    count(distinct customer_key) as total_customers,
     sum(sales_quantity) as total_items,
 from  {{ source('analytics_source', 'fact_sales') }}
 where sales_order_date is not null
@@ -99,7 +99,7 @@ select
 --     year(sales_order_date) as order_year,
     date_trunc('month',sales_order_date) as order_month,
     sum(sales_amount) as total_sales,
-    count(distinct customer_skey) as total_customers,
+    count(distinct customer_key) as total_customers,
     sum(sales_quantity) as total_items,
 from  {{ source('analytics_source', 'fact_sales') }}
 where sales_order_date is not null

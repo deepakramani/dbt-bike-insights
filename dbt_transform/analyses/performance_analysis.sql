@@ -23,7 +23,7 @@ select
     dp.product_name,
     sum(fs.sales_amount) as current_sales
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey = dp.product_skey
+left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_key = dp.product_key
 where fs.sales_order_date is not null
 group by order_year, dp.product_name
 order by order_year
@@ -59,7 +59,7 @@ select
     dp.product_name,
     sum(fs.sales_amount) as current_sales
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey = dp.product_skey
+left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_key = dp.product_key
 where fs.sales_order_date is not null
 group by order_month, dp.product_name
 order by order_month

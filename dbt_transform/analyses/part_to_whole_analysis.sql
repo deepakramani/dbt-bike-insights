@@ -19,7 +19,7 @@ select
     sum(fs.sales_amount) as total_sales,
     count(fs.sales_order_number) as total_orders
 from {{ source('analytics_source', 'fact_sales') }} fs
-left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_skey = dp.product_skey
+left join {{ source('analytics_source', 'dim_products_current') }} dp on fs.product_key = dp.product_key
 group by dp.product_category
 ),
 overall_calc as (

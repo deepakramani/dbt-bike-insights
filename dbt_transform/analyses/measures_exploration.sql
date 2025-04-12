@@ -37,17 +37,17 @@ select
     count( product_key) as total_products
 from {{ source('analytics_source','dim_products_current') }}; -- 295
 select
-    count( distinct product_skey) as total_products
+    count( distinct product_key) as total_products
 from {{ source('analytics_source','fact_sales') }}; --130
 
 -- Find the total number of customers
 select
-    count(customer_skey) as total_customers
+    count(customer_key) as total_customers
 from {{ source('analytics_source','dim_customers_current') }}; --18484
 
 -- Find the total number of customers that has placed an order
 select
-    count( distinct customer_skey) as total_customers
+    count( distinct customer_key) as total_customers
 from {{ source('analytics_source','fact_sales') }}; --18484
 
 
@@ -77,8 +77,8 @@ product_metrics as (
 ),
 customer_metrics as (
     select 
-        count(customer_skey) as total_customers,
-        (select count(distinct customer_skey) from sales_source) as total_ordered_customers
+        count(customer_key) as total_customers,
+        (select count(distinct customer_key) from sales_source) as total_ordered_customers
     from customer_source
 ),
 business_metrics as (
