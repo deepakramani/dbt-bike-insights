@@ -1,0 +1,4 @@
+product_category,total_sales,total_orders,overall_sales,overall_orders,percentage_of_total,percentage_of_orders
+Bikes,41783533,22463,43521921,89818,96.01%,25.01%
+Accessories,1151132,48972,43521921,89818,2.64%,54.52%
+Clothing,587256,18383,43521921,89818,1.35%,20.47%
