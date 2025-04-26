@@ -172,14 +172,14 @@ resource "null_resource" "setup_vm" {
   provisioner "remote-exec" {
     inline = [
       "cd ~",
-      "sudo apt-get update && sudo apt-get install -y make git unzip > /dev/null 2>&1",
-      "git clone https://github.com/deepakramani/dbt-bike-insights.git > /dev/null 2>&1",
+      "sudo apt-get update && sudo apt-get install -y make git unzip",
+      "git clone https://github.com/deepakramani/dbt-bike-insights.git",
       "cd dbt-bike-insights",
       "git checkout feature-terraform",
-      "make install_docker",
+      # "make install_docker",
       "make install_conda",
       "make install_dbt",
-      "make install_duckdb"
+      # "make install_duckdb"
     ]
   }
 

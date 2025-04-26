@@ -36,7 +36,7 @@ install_conda:
 	    source ./warehouse/scripts/install_conda.sh
 
 install_dbt:
-		{HOME}/soft/miniforge3/bin/conda activate base
+		~/soft/miniforge3/bin/conda activate base
 	    pip install --upgrade pip
 	    pip install pipenv
 		pipenv install
