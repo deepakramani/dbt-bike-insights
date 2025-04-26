@@ -5,9 +5,9 @@ SHELL := /bin/bash
 	    test_silver test_gold compile_analyses
 
 help:
-        @echo "Usage: make [target]"
-        @echo
-        @echo "Recommended order to run commands:"
+		@echo "Usage: make [target]"
+		@echo
+		@echo "Recommended order to run commands:"
         @echo "  1. make install_docker          # Install Docker and prerequisites"
         @echo "  2. make install_conda           # Install miniforge conda env"
         @echo "  3. make install_dbt             # Install dbt-core and others"
