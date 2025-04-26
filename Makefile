@@ -34,8 +34,9 @@ install_docker:
 
 install_conda:
 	    source ./warehouse/scripts/install_conda.sh
-
+		source ${HOME}/soft/miniforge3/etc/profile.d/conda.sh
 install_dbt:
+      	# source ${HOME}/soft/miniforge3/etc/profile.d/conda.sh
 	    pip install --upgrade pip
 	    pip install pipenv
 		pipenv install
