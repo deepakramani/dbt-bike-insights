@@ -22,12 +22,12 @@ terraform {
 }
 
 # Create a GCP bucket for CSV data files
-resource "google_storage_bucket" "data_bucket" {
-  name                        = var.data_bucket_name
-  location                    = var.region
-  force_destroy               = true
-  uniform_bucket_level_access = true
-}
+# resource "google_storage_bucket" "data_bucket" {
+#   name                        = var.data_bucket_name
+#   location                    = var.region
+#   force_destroy               = true
+#   uniform_bucket_level_access = true
+# }
 
 # Upload CSV files to the data bucket
 # resource "google_storage_bucket_object" "csv_files" {
@@ -163,16 +163,22 @@ resource "google_compute_instance" "elt_vm" {
 resource "null_resource" "setup_vm" {
   depends_on = [google_compute_instance.elt_vm]
 
-  provisioner "local-exec" {
-    command = <<EOF
-    cd ~
-    sudo apt-get update && sudo apt-get install -y make
-    git clone https://github.com/deepakramani/dbt-bike-insights.git
-    git checkout feature-terraform
-    make install_docker
-    make install_dbt
-    cd ~/dbt-bike-insights
-    EOF
+  connection {
+    type        = "ssh"
+    host        = google_compute_instance.elt_vm.network_interface[0].access_config[0].nat_ip
+    user        = "ramdee"
+    private_key = file("~/.ssh/ramdee_gcp/ramdee_gcp")
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "cd ~",
+      "sudo apt-get update && sudo apt-get install -y make git",
+      "git clone https://github.com/deepakramani/dbt-bike-insights.git",
+      "cd dbt-bike-insights",
+      "git checkout feature-terraform",
+      "make install_docker",
+      "make install_dbt",
+    ]
   }
 
 }
