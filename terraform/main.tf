@@ -178,7 +178,7 @@ resource "null_resource" "setup_vm" {
       "git checkout feature-terraform",
       "make install_docker",
       "make install_conda",
-      "source $HOME/soft/miniforge3/etc/profile.d/conda.sh",
+      ". $HOME/soft/miniforge3/etc/profile.d/conda.sh",
       "$HOME/soft/miniforge3/bin/conda activate base",
       "make install_dbt",
       "make install_duckdb"
