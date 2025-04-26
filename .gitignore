@@ -12,3 +12,9 @@ dwh.duckdb
 
 #visualisation files
 lib/
+
+#terraform
+*.tfstate*
+*.hcl
+**/.terraform/*
+.terraform.tfstate.lock.info
