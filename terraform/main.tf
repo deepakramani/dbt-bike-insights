@@ -179,7 +179,7 @@ resource "null_resource" "setup_vm" {
       "make install_docker",
       "make install_conda",
       "source $HOME/miniforge3/etc/profile.d/conda.sh",
-      "${HOME}/soft/miniforge3/bin/conda activate base",
+      "$HOME/soft/miniforge3/bin/conda activate base",
       "make install_dbt",
       "make install_duckdb"
     ]
