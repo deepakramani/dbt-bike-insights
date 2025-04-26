@@ -32,9 +32,10 @@ help:
 install_docker:
 	    source ./warehouse/scripts/install_docker.sh
 
-install_dbt:
+install_conda:
 	    source ./warehouse/scripts/install_conda.sh
-	    @sleep 2
+
+install_dbt:
 	    pip install --upgrade pip
 	    pip install pipenv
 		pipenv install
