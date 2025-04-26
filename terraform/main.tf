@@ -87,7 +87,7 @@ resource "google_compute_instance" "elt_vm" {
 
   # Spot instance configuration
   scheduling {
-    provisioning_model = "SPOT"
+    provisioning_model = "spot"
     preemptible        = true
     automatic_restart  = false
   }
@@ -98,16 +98,62 @@ resource "google_compute_instance" "elt_vm" {
     # Set up logging
     exec > >(tee -a /var/log/startup-script.log) 2>&1
     echo "Starting startup script at $(date)"
-
-    cd ~
-    sudo apt update && sudo apt install make unzip -y
+    # Clone the repository
+    echo "Cloning repository..."
+    cd /home/ubuntu || mkdir -p /home/ubuntu && cd /home/ubuntu
     git clone https://github.com/deepakramani/dbt-bike-insights.git
+    
+    # Set ownership to ensure the default user can access
+    chown -R ubuntu:ubuntu /home/ubuntu/dbt-bike-insights
+    
     cd dbt-bike-insights
-    make install_docker
-    make install_dbt
-    make install_duckdb
-    curl -sSL https://install.astronomer.io | bash
+    git checkout feature-terraform
+    apt update
+    apt install make -y
+    
+    # Run installation commands with error checking
+    echo "Running make install_docker..."
+    if make install_docker; then
+      echo "Docker installation completed"
+    else
+      echo "Docker installation failed with status $?"
+    fi
+    
+    echo "Running make install_dbt..."
+    if make install_dbt; then
+      echo "DBT installation completed"
+    else
+      echo "DBT installation failed with status $?"
+    fi
+    
+    echo "Running make install_duckdb..."
+    if make install_duckdb; then
+      echo "DuckDB installation completed"
+    else
+      echo "DuckDB installation failed with status $?"
+    fi
+    
+    echo "Installing Astronomer CLI..."
+    if curl -sSL https://install.astronomer.io | bash; then
+      echo "Astronomer installation completed"
+    else
+      echo "Astronomer installation failed with status $?"
+    fi
+    
+    echo "Startup script completed at $(date)"
+    
+    # Create a flag file to indicate completion
+    touch /var/log/startup-script-completed
   EOT
+  #   cd ~
+  #   sudo apt update && sudo apt install make unzip -y
+  #   git clone https://github.com/deepakramani/dbt-bike-insights.git
+  #   cd dbt-bike-insights
+  #   make install_docker
+  #   make install_dbt
+  #   make install_duckdb
+  #   curl -sSL https://install.astronomer.io | bash
+  # EOT
 
   depends_on = [
     google_compute_firewall.allow_ports,
@@ -117,5 +163,6 @@ resource "google_compute_instance" "elt_vm" {
 }
 
 output "instance_static_ip" {
-  value = google_compute_address.static_ip.address
+  value       = google_compute_address.static_ip.address
+  description = "outputs the static public ip address"
 }
