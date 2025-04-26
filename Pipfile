@@ -18,6 +18,3 @@ plotly = "*"
 pyvis = "*"
 kaleido = "*"
 
-
-[requires]
-python_version = ">3.9"
