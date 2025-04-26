@@ -39,24 +39,23 @@ terraform {
 # }
 
 # Create a VPC network
-# resource "google_compute_network" "elt_network" {
-#   name                    = "elt-network"
-#   auto_create_subnetworks = true
-# }
+resource "google_compute_network" "elt_network" {
+  name                    = "elt-network"
+  auto_create_subnetworks = true
+}
 
 # Create firewall rules to allow specific ports
-# resource "google_compute_firewall" "allow_ports" {
-#   name    = "allow-elt-dbt-ports"
-#   network = google_compute_network.elt_network.name
+resource "google_compute_firewall" "allow_ports" {
+  name    = "allow-elt-dbt-ports"
+  network = google_compute_network.elt_network.name
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "5432", "4213", "4040-4050", "8080"]
+  }
 
-#   allow {
-#     protocol = "tcp"
-#     ports    = ["22", "5432", "4213", "4040-4050", "8080"]
-#   }
-
-#   source_ranges = ["0.0.0.0/0"]
-#   target_tags   = ["elt-vm"]
-# }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["elt-vm"]
+}
 
 # Create a static external IP
 # resource "google_compute_address" "static_ip" {
@@ -79,7 +78,7 @@ resource "google_compute_instance" "elt_vm" {
   }
 
   network_interface {
-    network = "default" #google_compute_network.elt_network.name
+    network = google_compute_network.elt_network.name
     access_config {}
     #   nat_ip = google_compute_address.static_ip.address
     # }
@@ -115,7 +114,7 @@ resource "null_resource" "setup_vm" {
   }
 
 }
-# output "instance_static_ip" {
-#   value       = google_compute_address.static_ip.address
-#   description = "outputs the static public ip address"
-# }
+output "instance_ip_address" {
+  value       = google_compute_instance.elt_vm.network_interface[0].access_config[0].nat_ip #google_compute_address.static_ip.address
+  description = "outputs the static public ip address"
+}
