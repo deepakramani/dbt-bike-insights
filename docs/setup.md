@@ -8,10 +8,9 @@ This project is tested with AWS/GCP linux machine running Ubuntu 20.04 and Mac M
 cd ~
 sudo apt update && sudo apt install git make -y
 git clone https://github.com/deepakramani/dbt-bike-insights.git
-cd etl_with_dbt_dwh
+cd ~/dbt-bike-insights
 make install_conda
 make install_docker
-make install_duckdb
 source ~/.bashrc
 ```
 
@@ -19,7 +18,35 @@ Logout and log in back to the instance. To test docker if it is working, run
 ```
 docker run --rm hello-world # should return "Hello from Docker!" without errors
 ```
-**Set environment variables:**
+
+```{.bash filename="install dbt and duckdb"}
+cd ~/dbt-bike-insights
+make install_dbt
+make install_duckdb
+```
+
+**(optional) - terraform instructions**
+
+These instructions require one to have active GCP account, appropriate service account with sufficient privileges(resource manager, storage, compute APIs). A GCS bucket needs to be created for terraform remote backend state file.
+
+```{.bash filename="Terraform instructions"}
+cd ~/dbt-bike-insights/terraform
+terraform init # sets up terraform and remote backend
+terraform plan # should see 4 number of resources to be installed
+terraform apply -auto-approve # allocate resources and install docker and conda
+```
+
+Now we can log into the VM and continue to setup our project environment
+
+```{.bash filename="install dbt and duckdb"}
+cd ~/dbt-bike-insights
+make install_dbt
+make install_duckdb
+```
+
+After this, the VM is ready for the project. Continue with below instructions.
+
+## Set environment variables
 
 ```{.bash filename="export env variables"}
 export POSTGRES_USER=postgres                             

@@ -31,6 +31,7 @@ Key model relationships visualized in this documentation demonstrate how:
 
 ## At a Glance
 - **Stack**: dbt (ELT), PostgreSQL (DWH via Docker), DuckDB (analytics), SQL  
+- **Infrastructure as Code(IaC)** (optional):  Terraform(setup GCP Ubuntu VM)
 - **Pipeline**: CSV ingestion → PostgreSQL (Bronze → Silver → SCD2 Snapshots → Gold) → DuckDB analysis  
 - **Data**: 6 CSV files, 2010–Jan 2014 (44,734 customers, 89,849 items, $43.5M sales)  
 - **Features**: SCD2 snapshots, data quality checks, analytics (LTV, RFM, product affinity, customer segmentation)  
@@ -105,6 +106,7 @@ ORDER BY p.order_count DESC;
 *Network visualization of product category relationships. Line thickness represents affinity strength.*
 
 ![Product affinity barchart](analytics_portfolio/output/product_affinity/product_affinity_barchart.png "Product Affinity barchart")
+
 *Product Category vs Affinity — higher % implies stronger relationship.*
 
 The analysis revealed strong natural purchasing relationships:
@@ -142,6 +144,7 @@ Beyond product affinity, I developed several other analytical models to extract 
 ### Customer Lifetime Value (CLV)
 **Question:** Which customer segments deliver the most value over time, and how can we increase it?
 ![Lifetime Value over time](analytics_portfolio/output/ltv/ltv_range_box.png)
+
 [Full CLV analysis →](./analytics_portfolio/customer_lifetime_value/customer_lifetime_value.md)
 
 
@@ -195,7 +198,7 @@ For comprehensive details, see the complete [skills](./docs/skills.md) documenta
 
 ## Run It Yourself
 1. **Clone the Repo**: `git clone https://github.com/deepakramani/dbt-bike-insights.git`  
-2. **Install Dependencies**: `make install_conda && make install_docker && make install_duckdb`  
+2. **Install Dependencies**: `make install_conda && make install_docker && make install_dbt && make install_duckdb`  
 (Optional): Export Postgres and dbt environment variables.
 3. **Start the Data Warehouse**: `cd ~/dbt-bike-insights/ && make up`
 4. **Set Up dbt**: `conda create -n mydbt python=3.9 dbt-core dbt-postgres -y && conda activate mydbt && && make dbt_setup`
@@ -204,7 +207,8 @@ For comprehensive details, see the complete [skills](./docs/skills.md) documenta
 7. **Analyze in DuckDB**: `make run_analytics`
 8. **Bringing down resources**: `make down`
 
-See [detailed setup](./docs/setup.md) for more.
+See [detailed setup](./docs/setup.md) for more. 
+**Optional**: Terraform instructions present inside the above setup file.
 
 ## Coming Soon
 - **CI/CD Pipeline**: GitHub Actions workflow to run `dbt test` on push, ensuring data quality with each code change. 
