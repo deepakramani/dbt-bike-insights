@@ -39,10 +39,10 @@ terraform {
 # }
 
 # Create a VPC network
-resource "google_compute_network" "elt_network" {
-  name                    = "elt-network"
-  auto_create_subnetworks = true
-}
+# resource "google_compute_network" "elt_network" {
+#   name                    = "elt-network"
+#   auto_create_subnetworks = true
+# }
 
 # Create firewall rules to allow specific ports
 # resource "google_compute_firewall" "allow_ports" {
@@ -79,8 +79,8 @@ resource "google_compute_instance" "elt_vm" {
   }
 
   network_interface {
-    network = google_compute_network.elt_network.name
-    # access_config {
+    network = "default" #google_compute_network.elt_network.name
+    access_config {}
     #   nat_ip = google_compute_address.static_ip.address
     # }
   }
