@@ -172,8 +172,8 @@ resource "null_resource" "setup_vm" {
   provisioner "remote-exec" {
     inline = [
       "cd ~",
-      "sudo apt-get update && sudo apt-get install -y make git",
-      "git clone https://github.com/deepakramani/dbt-bike-insights.git",
+      "sudo apt-get update && sudo apt-get install -y make git unzip > /dev/null 2>&1",
+      "git clone https://github.com/deepakramani/dbt-bike-insights.git > /dev/null 2>&1",
       "cd dbt-bike-insights",
       "git checkout feature-terraform",
       "make install_docker",
