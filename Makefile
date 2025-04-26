@@ -37,7 +37,8 @@ install_dbt:
 	    @sleep 2
 	    pip install --upgrade pip
 	    pip install pipenv
-	    pipenv install dbt-core dbt-postgres dbt-duckdb
+		pipenv install
+	    # pipenv install dbt-core dbt-postgres dbt-duckdb
 
 install_duckdb:
 	    source ./warehouse/scripts/install_duckdb.sh

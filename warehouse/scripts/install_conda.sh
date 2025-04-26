@@ -7,6 +7,7 @@ fi
 cd ~/soft
 wget -q "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
 bash Miniforge3-$(uname)-$(uname -m).sh -b -p "${HOME}/soft/miniforge3"
-${HOME}/soft/miniforge3/bin/conda init $SHELL_NAME
 rm ${HOME}/soft/Miniforge3-$(uname)-$(uname -m).sh
+${HOME}/soft/miniforge3/bin/conda init $SHELL_NAME
+${HOME}/soft/miniforge3/bin/conda activate
 cd ~/dbt-bike-insights
