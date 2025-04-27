@@ -107,7 +107,6 @@ resource "null_resource" "setup_vm" {
       "sudo apt-get update && sudo apt-get install -y make git unzip",
       "git clone https://github.com/deepakramani/dbt-bike-insights.git",
       "cd dbt-bike-insights",
-      "git checkout feature-terraform",
       "make install_docker",
       "make install_conda",
     ]
