@@ -1,6 +1,10 @@
 # dbt-bike-insights: Turning Bike Shop Data into Revenue and Retention Wins
 
-Picture a bike shop thriving on $43M in sales from 2010–2014, yet blind to its own potential. Six scattered CSV files—CRM (customers, products, sales) and ERP (customers, locations, categories)—sat untapped. I built an ELT pipeline with dbt, PostgreSQL (via Docker), and DuckDB to transform this chaos into clarity. Raw data flowed into a PostgreSQL warehouse, shaped by a medallion architecture, and distilled into insights with DuckDB. The result? From spotting $29M in revenue from 20% of customers to unlocking a 26% Accessories-Bikes cross-sell, here’s how data drove real solutions.
+Picture a bike shop thriving on $43M in sales from 2010–2014, yet blind to its own potential. Six scattered CSV files—CRM (customers, products, sales) and ERP (customers, locations, categories)—sat untapped. 
+
+I built an ELT pipeline with dbt, PostgreSQL (via Docker), and DuckDB to transform this chaos into clarity. Raw data flowed into a PostgreSQL warehouse, shaped by a medallion architecture, and distilled into insights with DuckDB.
+
+The result? From spotting $29M in revenue from 20% of customers to unlocking a 26% Accessories-Bikes cross-sell, here’s how data drove real solutions.
 
 ## Architecture Overview
 ![Data Pipeline Architecture](docs/bike_shop_architecture.png)
@@ -52,6 +56,7 @@ Data then flows to DuckDB for fast, local analysis, slicing through 18,000+ cust
 
 
 ## Analytics Showcase: [Product Affinity Analysis](analytics_portfolio/product_affinity/product_affinity.md)
+
 ### The Business Question
 Which product categories are naturally purchased together, and how can we leverage these patterns to increase average order value?
 
@@ -208,7 +213,7 @@ For comprehensive details, see the complete [skills](./docs/skills.md) documenta
 8. **Bringing down resources**: `make down`
 
 See [detailed setup](./docs/setup.md) for more. 
-**Optional**: Terraform instructions present inside the above setup file.
+**Optional:** Terraform instructions also present inside.
 
 ## Coming Soon
 - **CI/CD Pipeline**: GitHub Actions workflow to run `dbt test` on push, ensuring data quality with each code change. 
