@@ -19,7 +19,7 @@ Logout and log in back to the instance. To test docker if it is working, run
 docker run --rm hello-world # should return "Hello from Docker!" without errors
 ```
 
-```{.bash filename="install dbt and duckdb"}
+```{.bash filename="install dbt, duckdb and astronomer CLI"}
 cd ~/dbt-bike-insights
 make install_dbt
 make install_duckdb
@@ -38,10 +38,12 @@ terraform apply -auto-approve # allocate resources and install docker and conda
 
 Now we can log into the VM and continue to setup our project environment
 
-```{.bash filename="install dbt and duckdb"}
+```{.bash filename="install dbt, duckdb and astronomer CLI"}
 cd ~/dbt-bike-insights
 make install_dbt
 make install_duckdb
+make install_astro_CLI
+
 ```
 
 After this, the VM is ready for the project. Continue with below instructions.
