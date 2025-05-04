@@ -10,12 +10,12 @@ Create database sql_dwh_db if it doesn't exist and create schemas for bronze, si
 SELECT 'CREATE DATABASE sql_dwh_db'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'sql_dwh_db')\gexec
 
-\c sql_dwh_db;
+-- \c sql_dwh_db;
 
-CREATE SCHEMA IF NOT EXISTS raw;
+-- CREATE SCHEMA IF NOT EXISTS raw;
 
-CREATE EXTENSION IF NOT EXISTS unaccent;
-COMMENT ON EXTENSION unaccent IS 'Text normalization extension to remove accents';
+-- CREATE EXTENSION IF NOT EXISTS unaccent;
+-- COMMENT ON EXTENSION unaccent IS 'Text normalization extension to remove accents';
 
 -- CREATE SCHEMA IF NOT EXISTS silver; -- not needed with dbt
 -- CREATE SCHEMA IF NOT EXISTS gold;
