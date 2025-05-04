@@ -6,7 +6,7 @@ dbt_transform_postgres:
       host: "{{ env_var('POSTGRES_HOST') }}"
       user: "{{ env_var('POSTGRES_USER') }}"
       pass: "{{ env_var('POSTGRES_PASSWORD') }}"
-      port: 5432
+      port: 5434
       schema: bronze
       threads: 2
       type: postgres
