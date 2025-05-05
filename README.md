@@ -2,7 +2,7 @@
 
 Picture a bike shop thriving on $43M in sales from 2010–2014, yet blind to its own potential. Six scattered CSV files—CRM (customers, products, sales) and ERP (customers, locations, categories)—sat untapped. 
 
-I built an ELT pipeline with dbt, PostgreSQL (via Docker), and DuckDB to transform this chaos into clarity. Raw data flowed into a PostgreSQL warehouse, shaped by a medallion architecture, and distilled into insights with DuckDB.
+I built an ELT pipeline with dbt, PostgreSQL (via Docker), DuckDB orchestrated by Apache Airflow to transform this chaos into clarity. Raw data flowed into a PostgreSQL warehouse, shaped by a medallion architecture, and distilled into insights with DuckDB.
 
 The result? From spotting $29M in revenue from 20% of customers to unlocking a 26% Accessories-Bikes cross-sell, here’s how data drove real solutions.
 
@@ -15,7 +15,8 @@ This data pipeline transforms raw bike shop CSVs into actionable business intell
 - Medallion architecture for progressive data refinement
 - dbt for transformation logic and testing
 - Docker containerization for portability and reproducibility
-
+- Apache Airflow for orchestration and scheduling
+- Terraform for infrastructure as code (optional)
 ## Data Modelling and Documentation
 
 The full data transformation logic is documented with dbt's built-in documentation generator, showcasing model definitions, relationships, and lineage:
@@ -34,7 +35,7 @@ Key model relationships visualized in this documentation demonstrate how:
 
 
 ## At a Glance
-- **Stack**: dbt (ELT), PostgreSQL (DWH via Docker), DuckDB (analytics), SQL  
+- **Stack**: dbt (ELT), PostgreSQL (DWH via Docker), DuckDB (analytics), SQL, Python, Airflow (orchestration)  
 - **Infrastructure as Code(IaC)** (optional):  Terraform(setup GCP Ubuntu VM)
 - **Pipeline**: CSV ingestion → PostgreSQL (Bronze → Silver → SCD2 Snapshots → Gold) → DuckDB analysis  
 - **Data**: 6 CSV files, 2010–Jan 2014 (44,734 customers, 89,849 items, $43.5M sales)  
@@ -180,11 +181,11 @@ Beyond product affinity, I developed several other analytical models to extract 
 ## Data Engineering & Analytics Skills Showcase
 ### Technical Stack:
 
-Data Processing: Apache Airflow, Hadoop/HDFS, Sqoop
 Databases: PostgreSQL, DuckDB
 Transformation: dbt (bronze/silver/gold architecture)
 Containerization: Docker
 Programming: Python, SQL, Shell scripting
+Orchestration: Apache Airflow
 
 ### Analytics Capabilities:
 
@@ -207,10 +208,16 @@ For comprehensive details, see the complete [skills](./docs/skills.md) documenta
 (Optional): Export Postgres and dbt environment variables.
 3. **Start the Data Warehouse**: `cd ~/dbt-bike-insights/ && make up`
 4. **Set Up dbt**: `conda create -n mydbt python=3.9 dbt-core dbt-postgres -y && conda activate mydbt && && make dbt_setup`
-5. **Run the Pipeline**: `dbt run --select bronze silver && dbt snapshot && dbt run --select gold`
-6. **Copy to DuckDB**: `make load_gold_tables`  
-7. **Analyze in DuckDB**: `make run_analytics`
-8. **Bringing down resources**: `make down`
+5. **Data Ingestion**: 
+    - `cd airflow && astro dev start`
+    - In the UI, admin->connections->create new. Create postgres dwh connection.
+    - From the Dag tab, activate `postgres_dwh_ingestion_pipeline` dag. If successful, all green should appear.
+6. **Run the Pipeline**: `dbt run --select bronze silver && dbt snapshot && dbt run --select gold`
+7. **Copy to DuckDB**: `make load_gold_tables`  
+8. **Analyze in DuckDB**: `make run_analytics`
+9. **Bringing down resources**: 
+    - `astro dev stop 
+    - `cd .. && make down`
 
 See [detailed setup](./docs/setup.md) for more. 
 **Optional:** Terraform instructions also present inside.
