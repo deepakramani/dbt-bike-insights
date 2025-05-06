@@ -1,10 +1,24 @@
 # dbt-bike-insights: Turning Bike Shop Data into Revenue and Retention Wins
 
-Picture a bike shop thriving on $43M in sales from 2010–2014, yet blind to its own potential. Six scattered CSV files—CRM (customers, products, sales) and ERP (customers, locations, categories)—sat untapped. 
+Despite generating $43M in sales from 2010–2014, this bike shop was flying blind—buried under fragmented CRM and ERP data. I built a modern ELT pipeline to uncover revenue drivers, retention gaps, and product affinities hidden in plain sight.
 
-I built an ELT pipeline with dbt, PostgreSQL (via Docker), DuckDB orchestrated by Apache Airflow to transform this chaos into clarity. Raw data flowed into a PostgreSQL warehouse, shaped by a medallion architecture, and distilled into insights with DuckDB.
+## Project Summary
+🔍 **What I Did**: Built an end-to-end ELT pipeline (Postgres, dbt, Airflow) transforming raw CRM/ERP data into a powerful analytics platform.
 
-The result? From spotting $29M in revenue from 20% of customers to unlocking a 26% Accessories-Bikes cross-sell, here’s how data drove real solutions.
+🎯 **Impact**: Identified $29M from top customers, exposed retention risks, and drove bundling strategy via product affinity analysis.
+
+🧰 **Stack**: Python, SQL, dbt, PostgreSQL, DuckDB, Airflow, Docker, Terraform
+
+## 📚 Table of Contents
+- [Architecture Overview](#architecture-overview)
+- [Data Modeling & Lineage](#data-modeling--lineage)
+- [Medallion Architecture](#medallion-architecture-in-action)
+- [Key Insights](#key-insights-unlocked)
+- [Analytics Showcase](#analytics-showcase-product-affinity-analysis)
+- [dbt Engineering Highlights](#dbt-engineering-highlights)
+- [Skills Demonstrated](#skills-demonstrated-engineering--analytics)
+- [Run It Yourself](#run-it-yourself)
+
 
 ## Architecture Overview
 ![Data Pipeline Architecture](docs/bike_shop_architecture.png)
@@ -17,7 +31,7 @@ This data pipeline transforms raw bike shop CSVs into actionable business intell
 - Docker containerization for portability and reproducibility
 - Apache Airflow for orchestration and scheduling
 - Terraform for infrastructure as code (optional)
-## Data Modelling and Documentation
+## Data Modelling and Lineage
 
 The full data transformation logic is documented with dbt's built-in documentation generator, showcasing model definitions, relationships, and lineage:
 
@@ -108,6 +122,7 @@ ORDER BY p.order_count DESC;
 </details>
 
 ### Key Findings Visualized
+
 ![product affinity network graph](analytics_portfolio/output/product_affinity/product_affinity_network_static.png "Product affinity network graph")
 *Network visualization of product category relationships. Line thickness represents affinity strength.*
 
@@ -117,17 +132,19 @@ ORDER BY p.order_count DESC;
 
 The analysis revealed strong natural purchasing relationships:
 
-Accessories & Bikes: 26.2% of all orders contain both categories
+**Accessories & Bikes:** 26.2% of all orders contain both categories
 Accessories & Clothing: 16.8% of orders contain both categories
-Bikes & Clothing: 11.9% of orders contain both categories
+**Bikes & Clothing:** 11.9% of orders contain both categories
 
-Business Impact & Implementation
+**Business Impact & Implementation**
 This analysis directly translated into actionable merchandising strategies:
 
-Store Layout Optimization: Placed accessory displays adjacent to bike showcases to capitalize on the 26.2% natural affinity, increasing attachment rate by an estimated 5%.
-Bundle Creation: Developed "Starter Kits" combining the most frequently co-purchased items from different categories, projected to increase average order value by $85.
+**Store Layout Optimization:** Placed accessory displays adjacent to bike showcases to capitalize on the 26.2% natural affinity, increasing attachment rate by an estimated 5%.
+
+**Bundle Creation:** Developed "Starter Kits" combining the most frequently co-purchased items from different categories, projected to increase average order value by $85.
 Sales Training: Equipped staff with specific cross-sell suggestions based on affinity data, focusing on the accessories-bikes relationship for maximum revenue impact.
-Online Recommendations: Implemented "Frequently Bought Together" suggestions on the e-commerce platform based on these affinity patterns, targeting a 3% increase in cart value.
+
+**Online Recommendations:** Implemented "Frequently Bought Together" suggestions on the e-commerce platform based on these affinity patterns, targeting a 3% increase in cart value.
 
 The product affinity analysis transformed raw transactional data into a strategic merchandising roadmap, enabling data-driven decisions that support both customer needs and business growth objectives.
 
@@ -168,7 +185,7 @@ Beyond product affinity, I developed several other analytical models to extract 
 
 [Full RFM analysis →](analytics_portfolio/rfm_analysis/rm_analysis.md)
 
-## dbt Highlights
+## dbt Engineering Highlights
 
 - **Ensured Data Trust**: Implemented 150+ tests across the medallion architecture from basic integrity(`unique`, `not_null`) to custom relationship tests(relationships_active_products) ensuring reliable analytics. This cut downstream errors by 30-40%.
 - **Tracked Business History**: Used `dbt snapshot` (SCD2) to accurately capture historical customer/product changes vital for trend analysis.  
@@ -178,7 +195,7 @@ Beyond product affinity, I developed several other analytical models to extract 
 - **Documentation**: Auto-generated documentation for all models with comprehensive descriptions, lineage graphs, and column-level annotations.
 
 
-## Data Engineering & Analytics Skills Showcase
+## Skills Demonstrated (Engineering + Analytics)
 ### Technical Stack:
 
 Databases: PostgreSQL, DuckDB
@@ -207,10 +224,10 @@ For comprehensive details, see the complete [skills](./docs/skills.md) documenta
 2. **Install Dependencies**: `make install_conda && make install_docker && make install_dbt && make install_duckdb`  
 (Optional): Export Postgres and dbt environment variables.
 3. **Start the Data Warehouse**: `cd ~/dbt-bike-insights/ && make up`
-4. **Set Up dbt**: `conda create -n mydbt python=3.9 dbt-core dbt-postgres -y && conda activate mydbt && && make dbt_setup`
+4. **Set Up dbt**: `conda create -n mydbt python=3.9 dbt-core dbt-postgres -y && conda activate mydbt && make dbt_setup`
 5. **Data Ingestion**: 
     - `cd airflow && astro dev start`
-    - In the UI, admin->connections->create new. Create postgres dwh connection.
+    - In the UI, navigate to admin->connections->Create and configure the required postgres and dbt connections to match your `profiles.yml`.
     - From the Dag tab, activate `postgres_dwh_ingestion_pipeline` dag. If successful, all green should appear.
 6. **Run the Pipeline**: `dbt run --select bronze silver && dbt snapshot && dbt run --select gold`
 7. **Copy to DuckDB**: `make load_gold_tables`  
