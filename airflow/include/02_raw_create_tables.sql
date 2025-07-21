@@ -71,19 +71,35 @@ CREATE TABLE IF NOT EXISTS raw.raw_erp_px_cat_g1v2 (
 
 DROP TABLE IF EXISTS monitoring.load_audit;
 CREATE TABLE IF NOT EXISTS monitoring.load_audit (
+    audit_id SERIAL PRIMARY KEY,
     table_name VARCHAR(100),
-    load_timestamp TIMESTAMP,
+    load_type TEXT CHECK (load_type IN ('initial', 'incremental', 'backfill')),
     records_loaded INTEGER,
+    load_started_at TIMESTAMP NOT NULL,
+    load_ended_at TIMESTAMP NOT NULL,
+    load_timestamp TIMESTAMP,
     status VARCHAR(20),
-    error_message TEXT
+    error_message TEXT,
+    file_name TEXT, -- optional, useful for file-based ingestion
+    dag_id TEXT,  -- Airflow DAG name
+    run_id TEXT   -- Airflow run_id (execution context)
 );
 
-CREATE OR REPLACE FUNCTION monitoring.audit_table_load(p_table_name text, p_is_full_load boolean DEFAULT false)
-RETURNS void AS $$
+CREATE OR REPLACE FUNCTION monitoring.audit_table_load(
+    p_table_name TEXT,
+    p_is_full_load BOOLEAN DEFAULT false,
+    p_dag_id TEXT DEFAULT NULL,
+    p_run_id TEXT DEFAULT NULL,
+    p_file_name TEXT DEFAULT NULL
+)
+RETURNS VOID AS $$
 DECLARE
-    v_count integer;
-    v_last_audit_time timestamp;
-    v_valid_tables text[] := ARRAY[
+    v_count INTEGER;
+    v_last_audit_time TIMESTAMP;
+    v_load_start TIMESTAMP := clock_timestamp();
+    v_load_end TIMESTAMP;
+    v_load_type TEXT;
+    v_valid_tables TEXT[] := ARRAY[
         'raw_crm_cust_info',
         'raw_crm_prd_info',
         'raw_crm_sales_details',
@@ -97,8 +113,14 @@ BEGIN
         RAISE EXCEPTION 'Invalid table name: %', p_table_name;
     END IF;
 
+    -- Set load type
+    v_load_type := CASE
+        WHEN p_is_full_load THEN 'initial'
+        ELSE 'incremental'
+    END;
+
+    -- Count records
     IF p_is_full_load THEN
-        -- For full loads, count all rows
         v_count := CASE p_table_name
             WHEN 'raw_crm_cust_info' THEN (SELECT COUNT(*) FROM raw.raw_crm_cust_info)
             WHEN 'raw_crm_prd_info' THEN (SELECT COUNT(*) FROM raw.raw_crm_prd_info)
@@ -108,75 +130,85 @@ BEGIN
             WHEN 'raw_erp_px_cat_g1v2' THEN (SELECT COUNT(*) FROM raw.raw_erp_px_cat_g1v2)
         END;
     ELSE
-        -- Get last audit time for incremental loads
         SELECT COALESCE(MAX(load_timestamp), '1970-01-01'::timestamp)
         INTO v_last_audit_time
         FROM monitoring.load_audit
         WHERE table_name = p_table_name;
 
-        -- Count only new rows since last audit
         v_count := CASE p_table_name
             WHEN 'raw_crm_cust_info' THEN (
-                SELECT COUNT(*) 
-                FROM raw.raw_crm_cust_info 
-                WHERE ingested_at > v_last_audit_time
-            )
+                SELECT COUNT(*) FROM raw.raw_crm_cust_info WHERE ingested_at > v_last_audit_time)
             WHEN 'raw_crm_prd_info' THEN (
-                SELECT COUNT(*) 
-                FROM raw.raw_crm_prd_info 
-                WHERE ingested_at > v_last_audit_time
-            )
+                SELECT COUNT(*) FROM raw.raw_crm_prd_info WHERE ingested_at > v_last_audit_time)
             WHEN 'raw_crm_sales_details' THEN (
-                SELECT COUNT(*) FROM raw.raw_crm_sales_details WHERE ingested_at > v_last_audit_time
-            )
+                SELECT COUNT(*) FROM raw.raw_crm_sales_details WHERE ingested_at > v_last_audit_time)
             WHEN 'raw_erp_loc_a101' THEN (
-                SELECT COUNT(*) FROM raw.raw_erp_loc_a101 WHERE ingested_at > v_last_audit_time
-            )
+                SELECT COUNT(*) FROM raw.raw_erp_loc_a101 WHERE ingested_at > v_last_audit_time)
             WHEN 'raw_erp_cust_az12' THEN (
-                SELECT COUNT(*) FROM raw.raw_erp_cust_az12 WHERE ingested_at > v_last_audit_time
-            )
+                SELECT COUNT(*) FROM raw.raw_erp_cust_az12 WHERE ingested_at > v_last_audit_time)
             WHEN 'raw_erp_px_cat_g1v2' THEN (
-                SELECT COUNT(*) FROM raw.raw_erp_px_cat_g1v2 WHERE ingested_at > v_last_audit_time
-            )
+                SELECT COUNT(*) FROM raw.raw_erp_px_cat_g1v2 WHERE ingested_at > v_last_audit_time)
         END;
     END IF;
 
-    -- Record the audit with load type
+    v_load_end := clock_timestamp();
+
+    -- Insert success audit record
     INSERT INTO monitoring.load_audit (
         table_name,
-        load_timestamp,
+        load_type,
         records_loaded,
+        load_started_at,
+        load_ended_at,
+        load_timestamp,
         status,
-        error_message
+        error_message,
+        file_name,
+        dag_id,
+        run_id
     ) VALUES (
         p_table_name,
-        CURRENT_TIMESTAMP,
+        v_load_type,
         v_count,
-        CASE 
-            WHEN p_is_full_load THEN 'FULL_LOAD_SUCCESS'
-            ELSE 'INCREMENTAL_SUCCESS'
-        END,
-        NULL
+        v_load_start,
+        v_load_end,
+        v_load_end,  -- same as ended_at
+        'success',
+        NULL,
+        p_file_name,
+        p_dag_id,
+        p_run_id
     );
-    EXCEPTION
-        WHEN OTHERS THEN
-            -- Log error in load audit table
-            INSERT INTO monitoring.load_audit (
-                table_name,
-                load_timestamp,
-                records_loaded,
-                status,
-                error_message
-            ) VALUES (
-                p_table_name,
-                CURRENT_TIMESTAMP,
-                0,
-                'LOAD_FAILED',
-                format('Error: %s. Detail: %s. Hint: %s', 
-                    SQLERRM,
-                    SQLSTATE                
-                )
-            );
-            RAISE;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        v_load_end := clock_timestamp();
+        -- Insert failure audit
+        INSERT INTO monitoring.load_audit (
+            table_name,
+            load_type,
+            records_loaded,
+            load_started_at,
+            load_ended_at,
+            load_timestamp,
+            status,
+            error_message,
+            file_name,
+            dag_id,
+            run_id
+        ) VALUES (
+            p_table_name,
+            v_load_type,
+            0,
+            v_load_start,
+            v_load_end,
+            v_load_end,
+            'failed',
+            SQLERRM,
+            p_file_name,
+            p_dag_id,
+            p_run_id
+        );
+        RAISE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
