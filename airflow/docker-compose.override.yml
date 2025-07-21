@@ -2,3 +2,20 @@ services:
   postgres:
     container_name: astro-airflow-postgres-metadata
     image: postgres:14-alpine
+
+  scheduler:
+    volumes:
+      - ../warehouse/input_data:/usr/local/airflow/input_data:ro
+
+  dag-processor:
+    volumes:
+      - ../warehouse/input_data:/usr/local/airflow/input_data:ro
+
+  triggerer:
+    volumes:
+      - ../warehouse/input_data:/usr/local/airflow/input_data:ro
+
+networks:
+  default:
+    name: bike_insights_network
+    external: true
