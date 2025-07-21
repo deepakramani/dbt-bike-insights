@@ -10,6 +10,16 @@ SQL_CREATE_DB = "01_create_raw_schema.sql"
 SQL_CREATE_TABLES = "02_raw_create_tables.sql"
 SQL_LOAD_DATA = "03_raw_load_data.sql"
 
+AUDIT_TABLES = [
+    "raw_crm_cust_info",
+    "raw_crm_prd_info",
+    "raw_crm_sales_details",
+    "raw_erp_loc_a101",
+    "raw_erp_cust_az12",
+    "raw_erp_px_cat_g1v2",
+]
+
+
 # Base DAG arguments
 default_args = {
     "owner": "airflow",
@@ -20,12 +30,12 @@ default_args = {
 }
 
 with DAG(
-    dag_id="postgres_dwh_ingestion_pipeline",
+    dag_id="postgres_dwh_initial_load_pipeline",
     description="Pipeline to create database, schema, tables and load data from CSV files",
     default_args=default_args,
     start_date=datetime(2025, 1, 1),
     catchup=False,
-    tags=["ingestion"],
+    tags=["initial", "ingestion"],
     template_searchpath=["/usr/local/airflow/include"],
 ) as dag:
     # Create database and schema
@@ -53,5 +63,15 @@ with DAG(
         autocommit=True,
     )
 
+    audit_tasks = []
+    for table in AUDIT_TABLES:
+        audit_task = SQLExecuteQueryOperator(
+            task_id=f"audit_{table}",
+            conn_id=DATABASE_CONN_ID,
+            sql=f"SELECT monitoring.audit_table_load('{table}', true);",
+            autocommit=True,
+        )
+        audit_tasks.append(audit_task)
+
     # Set task dependencies
-    (create_db_schema >> create_tables >> load_data)
+    (create_db_schema >> create_tables >> load_data >> audit_tasks)
