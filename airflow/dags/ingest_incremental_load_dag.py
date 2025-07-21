@@ -11,6 +11,7 @@ import shutil
 
 from airflow.decorators import dag, task
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.utils.task_group import TaskGroup
 
 DATABASE_CONN_ID = "postgres_dwh_conn"
 
@@ -90,6 +91,26 @@ def move_failed() -> None:
             shutil.move(fp, os.path.join(dst_dir, os.path.basename(fp)))
 
 
+@task
+def get_audit_sqls(tables: list[str], **context) -> list[str]:
+    sqls = []
+    # Extract actual values from context
+    dag_id = context["dag"].dag_id
+    run_id = context["run_id"]
+    for tbl in tables:
+        subdir, prefix = TABLES[tbl]
+        # Find matching files (assume only 1 per table at a time)
+        pattern = os.path.join(AIRFLOW_MOUNT, subdir, f"{prefix}*.csv")
+        files = sorted(glob.glob(pattern))
+        file_name = os.path.basename(files[0]) if files else None
+        sql = (
+            f"SELECT monitoring.audit_table_load("
+            f"'{tbl}', false, '{dag_id}', '{run_id}', '{file_name}');"
+        )
+        sqls.append(sql)
+    return sqls
+
+
 @dag(
     dag_id="incremental_load_dag",
     start_date=datetime(2025, 1, 1),
@@ -106,15 +127,13 @@ def incremental_load_dag():
         autocommit=True,
     )
 
+    audit_sqls = get_audit_sqls(table_task)
+
     audit_task = SQLExecuteQueryOperator.partial(
         task_id="audit_table",
         conn_id=DATABASE_CONN_ID,
         autocommit=True,
-    ).expand(
-        sql=table_task.map(  # Access loaded_tables and map to SQL statements
-            lambda tbl: f"SELECT monitoring.audit_table_load('{tbl}', false);"
-        )
-    )
+    ).expand(sql=audit_sqls)
 
     mv_proc = move_processed()
     mv_fail = move_failed()
