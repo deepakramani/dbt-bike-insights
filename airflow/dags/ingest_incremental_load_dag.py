@@ -1,7 +1,7 @@
 """
 Incremental loader DAG
-- finds any CSV whose name contains the table prefix
-- runs every minute for quick testing
+- runs every 4 minutes. Picks up new files when placed inside incremental directory and loads them into the corresponding table. Then moves processed files to a 'processed' subdirectory.
+- if any file fails to load, it moves them to a 'failed' subdirectory.
 """
 
 from datetime import datetime
@@ -20,14 +20,22 @@ POSTGRES_MOUNT = "/home/input_data/landing/incremental"
 # table  ->  (subdir,  prefix)
 TABLES = {
     "raw_crm_cust_info": ("crm", "cust_info"),
+    "raw_crm_prd_info": ("crm", "prd_info"),
+    "raw_crm_sales_details": ("crm", "sales_details"),
     "raw_erp_loc_a101": ("erp", "loc_a101"),
+    "raw_erp_cust_az12": ("erp", "cust_az12"),
+    "raw_erp_px_cat_g1v2": ("erp", "px_cat_g1v2"),
 }
 
 # columns in the same order as the CSV headers
 COLS = {
     "raw_crm_cust_info": "cst_id,cst_key,cst_firstname,cst_lastname,cst_marital_status,"
     "cst_gndr,cst_create_date,email,place_of_residence,postal_code",
-    "raw_erp_loc_a101": "loc_id,loc_name,loc_address,loc_city,loc_country,loc_type",
+    "raw_crm_prd_info": "prd_id,prd_key,prd_nm,prd_cost,prd_line,prd_start_dt,prd_end_dt",
+    "raw_crm_sales_details": "sls_ord_num,sls_prd_key,sls_cust_id,sls_order_dt,sls_ship_dt,sls_due_dt,sls_sales,sls_quantity,sls_price",
+    "raw_erp_loc_a101": "cid,cntry",
+    "raw_erp_cust_az12": "cid,bdate,gen",
+    "raw_erp_px_cat_g1v2": "id,cat,subcat,maintenance",
 }
 
 
@@ -85,7 +93,7 @@ def move_failed() -> None:
 @dag(
     dag_id="incremental_load_dag",
     start_date=datetime(2025, 1, 1),
-    schedule=None,  # "* * * * *",  # every minute
+    schedule="*/4 * * * *",
     catchup=False,
 )
 def incremental_load_dag():
