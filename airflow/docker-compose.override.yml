@@ -5,15 +5,15 @@ services:
 
   scheduler:
     volumes:
-      - ../warehouse/input_data:/usr/local/airflow/input_data:ro
+      - ../warehouse/input_data:/usr/local/airflow/input_data:rw
 
   dag-processor:
     volumes:
-      - ../warehouse/input_data:/usr/local/airflow/input_data:ro
+      - ../warehouse/input_data:/usr/local/airflow/input_data:rw
 
   triggerer:
     volumes:
-      - ../warehouse/input_data:/usr/local/airflow/input_data:ro
+      - ../warehouse/input_data:/usr/local/airflow/input_data:rw
 
 networks:
   default:
