@@ -18,3 +18,5 @@ lib/
 *.hcl
 **/.terraform/*
 .terraform.tfstate.lock.info
+
+04_raw_incremental_load.sql
