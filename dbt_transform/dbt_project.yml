@@ -21,9 +21,11 @@ models:
     bronze:
       +schema: bronze
       +materialized: incremental
+      +incremental_strategy: append
     silver:
       +schema: silver
       +materialized: incremental
+      +incremental_strategy: merge
     gold:
       +schema: gold
       +materialized: view
