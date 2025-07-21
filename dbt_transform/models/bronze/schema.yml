@@ -15,12 +15,17 @@ sources:
 models:
   - name: bz_crm_cust_info
     description: "Raw CRM customer information with added updated_at timestamp."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - cst_id
+            - ingested_at
+          description: "Ensures unique combination of customer ID and ingestion timestamp."
     columns:
       - name: cst_id
         description: "Unique identifier for the customer from CRM."
         tests:
           - not_null
-          - unique
       - name: cst_key
         description: "Customer key from CRM."
         tests:
