@@ -233,7 +233,7 @@ For comprehensive details, see the complete [skills](./docs/skills.md) documenta
 7. **Copy to DuckDB**: `make load_gold_tables`  
 8. **Analyze in DuckDB**: `make run_analytics`
 9. **Bringing down resources**: 
-    - `astro dev stop 
+    - `astro dev stop` 
     - `cd .. && make down`
 
 See [detailed setup](./docs/setup.md) for more. 
