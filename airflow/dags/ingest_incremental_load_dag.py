@@ -104,7 +104,7 @@ def get_audit_sqls(tables: list[str], **context) -> list[str]:
         files = sorted(glob.glob(pattern))
         file_name = os.path.basename(files[0]) if files else None
         sql = (
-            f"SELECT monitoring.audit_table_load("
+            f"SELECT monitoring.ingest_audit_log("
             f"'{tbl}', false, '{dag_id}', '{run_id}', '{file_name}');"
         )
         sqls.append(sql)

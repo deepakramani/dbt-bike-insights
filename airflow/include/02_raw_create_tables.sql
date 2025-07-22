@@ -68,9 +68,8 @@ CREATE TABLE IF NOT EXISTS raw.raw_erp_px_cat_g1v2 (
     ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
-DROP TABLE IF EXISTS monitoring.load_audit;
-CREATE TABLE IF NOT EXISTS monitoring.load_audit (
+DROP TABLE IF EXISTS monitoring.ingest_audit_log;
+CREATE TABLE IF NOT EXISTS monitoring.ingest_audit_log (
     audit_id SERIAL PRIMARY KEY,
     table_name VARCHAR(100),
     load_type TEXT CHECK (load_type IN ('initial', 'incremental', 'backfill')),
@@ -85,7 +84,8 @@ CREATE TABLE IF NOT EXISTS monitoring.load_audit (
     run_id TEXT   -- Airflow run_id (execution context)
 );
 
-CREATE OR REPLACE FUNCTION monitoring.audit_table_load(
+
+CREATE OR REPLACE FUNCTION monitoring.ingest_audit_log(
     p_table_name TEXT,
     p_is_full_load BOOLEAN DEFAULT false,
     p_dag_id TEXT DEFAULT NULL,
@@ -132,7 +132,7 @@ BEGIN
     ELSE
         SELECT COALESCE(MAX(load_timestamp), '1970-01-01'::timestamp)
         INTO v_last_audit_time
-        FROM monitoring.load_audit
+        FROM monitoring.ingest_audit_log
         WHERE table_name = p_table_name;
 
         v_count := CASE p_table_name
@@ -154,7 +154,7 @@ BEGIN
     v_load_end := clock_timestamp();
 
     -- Insert success audit record
-    INSERT INTO monitoring.load_audit (
+    INSERT INTO monitoring.ingest_audit_log (
         table_name,
         load_type,
         records_loaded,
@@ -184,7 +184,7 @@ EXCEPTION
     WHEN OTHERS THEN
         v_load_end := clock_timestamp();
         -- Insert failure audit
-        INSERT INTO monitoring.load_audit (
+        INSERT INTO monitoring.ingest_audit_log (
             table_name,
             load_type,
             records_loaded,

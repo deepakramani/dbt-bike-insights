@@ -4,14 +4,14 @@ from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
 DATABASE_CONN_ID = "postgres_dwh_conn"
 
-AUDIT_TABLES = [
-    "raw_crm_cust_info",
-    "raw_crm_prd_info",
-    "raw_crm_sales_details",
-    "raw_erp_loc_a101",
-    "raw_erp_cust_az12",
-    "raw_erp_px_cat_g1v2",
-]
+AUDIT_TABLES = {
+    "raw_crm_cust_info": "cust_info_1.csv",
+    "raw_crm_prd_info": "prd_info_1.csv",
+    "raw_crm_sales_details": "sales_details_1.csv",
+    "raw_erp_loc_a101": "loc_a101_1.csv",
+    "raw_erp_cust_az12": "cust_az12_1.csv",
+    "raw_erp_px_cat_g1v2": "px_cat_g1v2_1.csv",
+}
 
 default_args = {
     "owner": "airflow",
@@ -54,8 +54,8 @@ with DAG(
     audit_tasks = []
     for table in AUDIT_TABLES:
         audit_sql = (
-            "SELECT monitoring.audit_table_load("
-            f"'{table}', true, '{dag.dag_id}', '{{{{ run_id }}}}', NULL"
+            "SELECT monitoring.ingest_audit_log("
+            f"'{table}', true, '{dag.dag_id}', '{{{{ run_id }}}}', '{AUDIT_TABLES[table]}'"
             ");"
         )
         audit_task = SQLExecuteQueryOperator(
