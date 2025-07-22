@@ -16,6 +16,5 @@ services:
       - ../warehouse/input_data:/usr/local/airflow/input_data:rw
 
 networks:
-  default:
-    name: bike_insights_network
-    external: true
+  bike_insights_network:
+    driver: bridge

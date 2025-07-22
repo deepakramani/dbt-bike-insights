@@ -18,7 +18,27 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+    networks: # Add this section
+      - bike_insights_network
+
+  grafana_service:
+    image: grafana/grafana:10.0.3
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - "./grafana_data:/var/lib/grafana:rw"
+    depends_on:
+      - dwh-crm-erp
+    networks:
+      - bike_insights_network
+
+volumes:
+  grafana_data:
 
 networks:
-  default:
-    name: bike_insights_network
+  bike_insights_network:
+    driver: bridge
