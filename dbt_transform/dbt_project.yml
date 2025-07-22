@@ -16,6 +16,18 @@ snapshot-paths: ["snapshots"]
 clean-targets: # directories to be removed by `dbt clean`
   - "target"
 
+tests:
+  +store_failures: true
+  +store_failures_as: table
+  +schema: monitoring
+
+vars:
+  dbt_artifacts_database: sql_dwh_db
+  dbt_artifacts_schema: monitoring
+
+on-run-end:
+  - "{{ log_test_results() }}"
+
 models:
   dbt_transform: # same name as project
     bronze:
