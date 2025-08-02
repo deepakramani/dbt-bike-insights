@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS raw.raw_erp_px_cat_g1v2 (
     ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-DROP TABLE IF EXISTS monitoring.ingest_audit_log;
+DROP TABLE IF EXISTS monitoring.ingest_audit_log CASCADE;
 CREATE TABLE IF NOT EXISTS monitoring.ingest_audit_log (
     audit_id SERIAL PRIMARY KEY,
     table_name VARCHAR(100),
