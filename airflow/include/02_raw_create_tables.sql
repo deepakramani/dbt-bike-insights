@@ -99,20 +99,44 @@ DECLARE
     v_load_start TIMESTAMP := clock_timestamp();
     v_load_end TIMESTAMP;
     v_load_type TEXT;
+    v_existing_count INTEGER;
     v_valid_tables TEXT[] := ARRAY[
         'raw_crm_cust_info',
         'raw_crm_prd_info',
         'raw_crm_sales_details',
         'raw_erp_loc_a101',
         'raw_erp_cust_az12',
-        'raw_erp_px_cat_g1v2'
+        'raw_erp_px_cat_g1v2',
+        'raw_api_persona',
+        'raw_api_sales_tracking'
     ];
 BEGIN
+    -- Debug: Log the table name being validated
+    RAISE NOTICE 'Validating table name: %', p_table_name;
+    
+    -- Validate table name (trim whitespace)
+    p_table_name := TRIM(p_table_name);
     -- Validate table name
     IF NOT p_table_name = ANY(v_valid_tables) THEN
         RAISE EXCEPTION 'Invalid table name: %', p_table_name;
     END IF;
 
+    -- Check if audit entry already exists for this specific run
+    IF p_dag_id IS NOT NULL AND p_run_id IS NOT NULL THEN
+        SELECT COUNT(*)
+        INTO v_existing_count
+        FROM monitoring.ingest_audit_log
+        WHERE table_name = p_table_name
+        AND dag_id = p_dag_id
+        AND run_id = p_run_id;
+        
+        IF v_existing_count > 0 THEN
+            RAISE NOTICE 'Audit entry already exists for table %, dag_id %, run_id %. Skipping...', 
+                p_table_name, p_dag_id, p_run_id;
+            RETURN;
+        END IF;
+    END IF;
+    
     -- Set load type
     v_load_type := CASE
         WHEN p_is_full_load THEN 'initial'
@@ -128,6 +152,8 @@ BEGIN
             WHEN 'raw_erp_loc_a101' THEN (SELECT COUNT(*) FROM raw.raw_erp_loc_a101)
             WHEN 'raw_erp_cust_az12' THEN (SELECT COUNT(*) FROM raw.raw_erp_cust_az12)
             WHEN 'raw_erp_px_cat_g1v2' THEN (SELECT COUNT(*) FROM raw.raw_erp_px_cat_g1v2)
+            WHEN 'raw_api_persona' THEN (SELECT COUNT(*) FROM raw.raw_api_persona)
+            WHEN 'raw_api_sales_tracking' THEN (SELECT COUNT(*) FROM raw.raw_api_sales_tracking)
         END;
     ELSE
         SELECT COALESCE(MAX(load_timestamp), '1970-01-01'::timestamp)
@@ -148,9 +174,15 @@ BEGIN
                 SELECT COUNT(*) FROM raw.raw_erp_cust_az12 WHERE ingested_at > v_last_audit_time)
             WHEN 'raw_erp_px_cat_g1v2' THEN (
                 SELECT COUNT(*) FROM raw.raw_erp_px_cat_g1v2 WHERE ingested_at > v_last_audit_time)
+            WHEN 'raw_api_persona' THEN (
+                SELECT COUNT(*) FROM raw.raw_api_persona WHERE ingested_at > v_last_audit_time)
+            WHEN 'raw_api_sales_tracking' THEN (
+                SELECT COUNT(*) FROM raw.raw_api_sales_tracking WHERE ingested_at > v_last_audit_time)
         END;
     END IF;
 
+    -- Handle case where count is NULL (table might be empty or missing ingested_at column)
+    v_count := COALESCE(v_count, 0);
     v_load_end := clock_timestamp();
 
     -- Insert success audit record
