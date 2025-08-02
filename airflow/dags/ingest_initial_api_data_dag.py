@@ -28,17 +28,15 @@ DB_CONN = "postgres_dwh_conn"
     },
 )
 def customer_data_ingestion():
-    @task(task_id="create_raw_api_tables")
-    def create_raw_api_tables():
-        """
-        Create the raw API tables for customer persona and sales tracking.
-        """
-        SQLExecuteQueryOperator(
-            task_id="create_raw_api_persona_table",
-            conn_id=DB_CONN,
-            sql="04_raw_create_api_tables.sql",
-            autocommit=True,
-        )
+    """
+    Create the raw API tables for customer persona and sales tracking.
+    """
+    create_tables_task = SQLExecuteQueryOperator(
+        task_id="create_raw_api_persona_table",
+        conn_id=DB_CONN,
+        sql="04_raw_create_api_tables.sql",
+        autocommit=True,
+    )
 
     @task(task_id="ingest_api_attributes_data")
     def ingest():
@@ -69,14 +67,14 @@ def customer_data_ingestion():
                 conn_id=DB_CONN,
                 sql=audit_sql,
                 autocommit=True,
-            )
+            ).execute(context=context)
 
     # Flow
-    create_task = create_raw_api_tables()
+
     ingest_task = ingest()
     audit_task = log_audit()
 
-    create_task >> ingest_task >> audit_task
+    create_tables_task >> ingest_task >> audit_task
 
 
 # Instantiate the DAG
