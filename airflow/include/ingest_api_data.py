@@ -1,11 +1,17 @@
-import requests
-import json
-import hashlib
 from psycopg2.extras import execute_values
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 import os
+import requests
+import logging
+import json
+import hashlib
 
 CHUNK_SIZE = 10_000
+API_KEY = os.getenv("API_KEY")
+HEADERS = {"x-api-key": API_KEY}
+BASE_URL = "http://host.docker.internal:8000"
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
 def compute_json_hash(data_dict):
@@ -43,22 +49,39 @@ def _insert_records(
                     argslist=chunk,
                 )
         conn.commit()
-        print(f"Completed {table_name}: {len(records)} records processed")
+        logging.info(f"Completed {table_name}: {len(records)} records processed")
     except Exception as e:
-        print(f"Error during bulk insert into {table_name}: {e}")
+        logging.error(f"Error during bulk insert into {table_name}: {e}")
         raise
+
+
+def fetch_api(endpoint: str):
+    """Fetch data from API with retry on 429 (rate limit)."""
+    url = f"{BASE_URL}/{endpoint}"
+    resp = requests.get(url, headers=HEADERS)
+    logging.info(f"GET {url} -> {resp.status_code}")
+    return resp
 
 
 def bulk_insert_api_data(**context):
     """Airflow task to insert API data"""
 
-    # Fetch data from API
-    persona_records = requests.get(
-        url="http://host.docker.internal:8000/persona"
-    ).json()
-    sales_tracking_records = requests.get(
-        url="http://host.docker.internal:8000/tracking"
-    ).json()
+    # Fetch persona data
+    persona_resp = fetch_api("raw_api_persona")
+    if persona_resp.status_code != 200:
+        raise Exception(f"Persona API failed: {persona_resp.status_code}")
+
+    # Fetch sales data
+    sales_tracking_resp = fetch_api("raw_api_sales_tracking")
+    if sales_tracking_resp.status_code != 200:
+        raise Exception(f"Sales API failed: {sales_tracking_resp.status_code}")
+
+    if persona_resp.status_code == 429 or sales_tracking_resp.status_code == 429:
+        logging.warning(
+            "API rate limit exceeded. Please check the API service or increase the limit."
+        )
+    persona_records = persona_resp.json()
+    sales_tracking_records = sales_tracking_resp.json()
 
     # Process persona records
     cust_records = [
@@ -94,6 +117,6 @@ def bulk_insert_api_data(**context):
         "tracking_data_hash",
     )
 
-    # print(
-    #     f"Successfully ingested {len(cust_records)} persona records and {len(tracking_records)} tracking records"
-    # )
+    logging.info(
+        f"Successfully ingested {len(cust_records)} persona records and {len(tracking_records)} tracking records"
+    )
