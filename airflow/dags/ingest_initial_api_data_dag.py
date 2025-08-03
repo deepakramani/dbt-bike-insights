@@ -12,11 +12,11 @@ DB_CONN = "postgres_dwh_conn"
 
 @dag(
     dag_id="api_data_ingestion",
-    description="Ingest customer and sales tracking data from API to PostgreSQL (persona + sales_tracking)",
+    description="Ingest customer and sales tracking data from API to PostgreSQL (raw_api_persona + raw_api_sales_tracking)",
     start_date=datetime(2025, 8, 1),
     schedule=None,  # timedelta(hours=1),
     catchup=False,
-    tags=["customer", "ingestion", "api"],
+    tags=["api endpoints", "api_ingestion", "json"],
     template_searchpath=["/usr/local/airflow/include"],
     default_args={
         "owner": "airflow",
@@ -41,9 +41,7 @@ def customer_data_ingestion():
     @task(task_id="ingest_api_attributes_data")
     def ingest():
         """
-        Re-use the existing bulk_insert_api_data() which loads
-        raw_api_persona and raw_api_sales_tracking.
-        No code changes required there.
+        Ingest customer and sales tracking data from API to Postgres DB.
         """
         bulk_insert_api_data()
 
