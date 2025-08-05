@@ -18,7 +18,24 @@ services:
       retries: 5
       start_period: 5s
     restart: always
-    networks: # Add this section
+    networks:
+      - bike_insights_network
+
+  api_service:
+    build:
+      context: ../api_data
+      dockerfile: Dockerfile
+    container_name: api_service_container
+    volumes:
+      - ../api_data/cust_info_with_attributes.json:/app/cust_info_with_attributes.json
+      - ../api_data/sales_details_with_attributes.json:/app/sales_details_with_attributes.json
+    ports:
+      - "8000:8000"
+    environment:
+      - API_KEY=${API_KEY}
+    depends_on:
+      - dwh-crm-erp
+    networks:
       - bike_insights_network
 
   grafana_service:
@@ -41,4 +58,5 @@ volumes:
 
 networks:
   bike_insights_network:
+    name: bike_insights_network
     driver: bridge
