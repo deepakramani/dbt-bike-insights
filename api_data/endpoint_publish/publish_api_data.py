@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 
 app = FastAPI(title="Attribute Broadcast API")
-data_path = Path(__file__).resolve().parent.parent
+data_path = Path(__file__).resolve().parent
 
 API_KEY = os.getenv("API_KEY")
 
