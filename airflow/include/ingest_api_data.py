@@ -9,7 +9,8 @@ import hashlib
 CHUNK_SIZE = 10_000
 API_KEY = os.getenv("API_KEY")
 HEADERS = {"x-api-key": API_KEY}
-BASE_URL = "http://host.docker.internal:8000"
+# BASE_URL = "http://host.docker.internal:8000"
+BASE_URL = "http://api_service:8000"  # when using docker container
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
