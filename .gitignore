@@ -4,7 +4,7 @@ dbt_packages/
 logs/
 *user.yml
 
-Dockerfile
+airflow/Dockerfile
 *psql_vol*
 
 dwh.duckdb
